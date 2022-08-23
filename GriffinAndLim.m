@@ -1,5 +1,5 @@
 % Spectrogram function
-addpath( '/Users/ben/Documents/MATLAB/library_repo' )
+ addpath( 'C:\Users\Lord Photon\Documents\MATLAB\library_repo\library' )
 %% Time frequency vectors definition
 
 lent=2^12;                      % Signal length
@@ -131,7 +131,7 @@ diC=di;
 diR=di;
 
 h1=figure;
-h1.Position=[-1528 112 821 865];
+h1.Position=[55 117 990 861];%[-1528 112 821 865];
 xlimsZoom=t(round(end/2))+winLen*dt*[-2 2];
 
 while i<maxIteration+1
