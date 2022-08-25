@@ -3,7 +3,7 @@
 addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 %% Time frequency vectors definition
 
-lent=2^12;                      % Signal length
+lent=2^14;                      % Signal length
 tWind=800e-9;                   % Time window span
 
 
@@ -17,9 +17,9 @@ scale=1;
 %% spgm parameters
 
 % Adjust these parameters as needed
-winLen=2^7;
+winLen=2^9;
 winInc=winLen/2^4;%winLen-1;%/(2^2);
-interpAmount_t; % For now, make this a power of 2 (or 1)!!
+interpAmount_t=1; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
 % win=hann(winLen+2).^3;win=win(2:end-1)';%ones(1,winLen);

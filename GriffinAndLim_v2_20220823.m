@@ -1,9 +1,8 @@
 % Spectrogram function
  addpath( 'C:\Users\Lord Photon\Documents\MATLAB\library_repo\library' )
-addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 %% Time frequency vectors definition
 
-lent=2^15;                      % Signal length
+lent=2^12;                      % Signal length
 tWind=800e-9;                   % Time window span
 
 
@@ -17,11 +16,10 @@ scale=1;
 %% spgm parameters
 
 % Adjust these parameters as needed
-winLen=2^9;
-winInc=winLen/2;%winLen-1;%/(2^2);
-interpAmount=2^4; % For now, make this a power of 2 (or 1)!!
+winLen=2^7
+winInc=winLen/2^5;%winLen-1;%/(2^2);
 
-% win=hann(winLen+2).^3;win=win(2:end-1)';%ones(1,winLen);
+% win=hann(winLen+2).';win=win(2:end-1); %%% Window shape
 win=ones(1,winLen);
 
 
@@ -38,17 +36,15 @@ winInds=(1:winLen)-winLen/2;
 
 
 % % % % % % Linearly chirped signal
-% fmax=Fs;
-% fini=0; ffin=fmax/20;
-% c=(ffin-fini)/tWind;
+fmax=Fs;
+fini=0; ffin=fmax/10;
+c=(ffin-fini)/tWind;
 % SUT=exp(1j*pi*sin(2*pi*(c/2*t.^2+fini*t))).*superGauss(0,tWind/3,10,t,tWind/2);
 % SUT=sin(2*pi*(c/2*t.^2+fini*t))+1;%.*superGauss(0,tWind/3,10,t,tWind/2);
 
-fmax=Fs/30;
-SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
-% SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
-%     superGauss(0,sutBW,10,f,0).*(exp(-1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
-SUT=nifft(SUTf,Fs);
+sutBW=Fs/3;
+SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
+SUT=nifft(SUTf,Fs)
 % SUT=superGauss(0,tWind/20,1,t,2*tWind/3)+superGauss(0,tWind/10,2,t,tWind/3);
 
 % % % % % ASE noise
@@ -66,42 +62,13 @@ SUT=nifft(SUTf,Fs);
 
 %% Spectrogram Algorithm
 
-% Get stft from windowIncrease Above
+
 spgm=get_spgm(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT);
-stftRaw=abs(spgm).^2;
-fstft_raw=((1:winLen)-winLen/2)/winLen*Fs;
-tstft_raw=linspace(t(1),t(end),numel(spgm(1,:)));
-
-figure;imagesc(stftRaw);
-
-% Setup interpolation
-nIncsInterp=nIncs*interpAmount;
-windowCentersInterp=(1:nIncsInterp)*winInc/interpAmount;
-
-tstft=linspace(t(1),t(end),numel(spgm(1,:))*interpAmount);
-fstft=linspace(f(1),f(end),numel(fstft_raw)*interpAmount);%fstft_raw;
-
-[tstft_rawM,fstft_rawM]=meshgrid(tstft_raw,fstft);
-[tstftM,fstftM]=meshgrid(tstft,fstft);
 
 
-% stft=interp2(tstft_rawM,fstft_rawM,stftRaw,tstftM,fstftM,'spline');
-% stft=griddata(tstft_rawM,fstft_rawM,stftRaw,tstftM,fstftM,'natural');
-
-
-% stft1=griddedInterpolant(tstft_rawM,fstft_rawM,stftRaw,tstftM,fstftM,'linear');
-stftInterpolant=griddedInterpolant({tstft_raw,fstft_raw},stftRaw','nearest');
-
-stftInterp=stftInterpolant({tstft,fstft})';
-% stft=griddata(tstft_rawM,fstft_rawM,ab,tstftM,fstftM);
-
-stft=imgaussfilt(stftInterp,interpAmount);
-figure;subplot(2,1,1)
-imagesc(stft)
-subplot(2,1,2)
-imagesc(stft2)
-
-%t(windowCenters);
+stft=abs(spgm).^2;
+tstft=t(windowCenters);
+fstft=((1:winLen)-winLen/2)/winLen*Fs;
 
 
 %% Spectrogram Plot
@@ -129,7 +96,7 @@ set(gca,'FontSize',FS)
 
 subplot(2,2,3:4)
 imagesc(tstft,fstft,stft);
-ylim([-fmax fmax])
+ylim([-fmax fmax]/2)
 xlabel('Time'); ylabel('Frequency');
 set(gca,'FontSize',FS)
 
@@ -144,18 +111,18 @@ set(gca,'FontSize',FS)
 % figure;plot(real(istft)); hold on; %plot(imag(istft)); %plot(abs(istft));
 % plot(SUT)
 % legend('Real istft','real SUT')
-winLenInterp=numel(fstft);
-winInterp=interp1(linspace(0,1,winLen),win,linspace(0,1,winLenInterp));
-winIndsInterp=(1:numel(fstft))-round(numel(fstft)/2);
-overlapAmount=numel(winIndsInterp)/(windowCentersInterp(2)-windowCentersInterp(1)); % This is the "overlapamount" AFTER interpolation
-analysisWin=winInterp/(overlapAmount); % Analysis window for the inverse STFT
+
+
+overlapAmount=numel(winInds)/(windowCenters(2)-windowCenters(1));
+analysisWin=win/(overlapAmount); % Analysis window for the inverse STFT
+fullWin=zeros(size(SUT)); fullWin(1:winLen)=1; fullWin=fullWin';
 
 S0=sqrt(stft);%.*(-1*(spgm<0));%.*exp(1j*rand(size(stft))*2*pi); % Seed spgm
 S0Mag=abs(sqrt(stft)); % S0 has the correct amplitude, but not the correct phase
-xt=get_ispgm(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
+xt=get_ispgm(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S0);
 xt0=xt; % This is the first initial guess
 
-maxIteration=200;
+maxIteration=1000;
 i=1;
 
 % Convergence criterion
@@ -169,38 +136,20 @@ xlimsZoom=t(round(end/2))+winLen*dt*[-2 2];
 
 while i<maxIteration+1
     
-    Si=get_spgm(nIncsInterp,winIndsInterp,windowCentersInterp,lent,winInterp,dt,winLenInterp,xt);         % Get STFT of present signal guess xt
-    Sip1=S0Mag.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
+    Si=get_spgm(nIncs,winInds,windowCenters,lent,win,dt,winLen,xt);         % Get STFT of present signal guess xt
+    Sip1=S0Mag.*sign(Si);%Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
     Sip1(isnan(Sip1))=0;
-    xt=get_ispgm(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,Sip1);
+    xt=get_ispgm(lent,winInds,windowCenters,analysisWin,Fs,nIncs,Sip1);
     % di(i)=sqrt(sum(sum(abs(abs(Si)-abs(Sip1)).^2))
     % di(i)=norm(abs(abs(Si)-abs(Sip1)).^2)/norm(abs(Si).^2)
 %     di(i)=(norm(abs(Si)-abs(Sip1))).^2;%)/norm(abs(Si).^2)
-    diC(i)=sqrt(    sum(sum( abs(  abs(S0) - abs(Si)  ).^2))  /    sum(sum(  abs(S0).^2 )) );%)/norm(abs(Si).^2)
-%     diC2(i)=sqrt(    sum(sum( abs(  sqrt(abs(S0).^2) - sqrt(abs(Si).^2)  ).^2 ))  /    sum(sum(  abs(S0).^2 )) );%)/norm(abs(Si).^2)
+    diC(i)=sqrt(    sum(sum( abs(  sqrt(abs(S0).^2) - sqrt(abs(Si).^2)  ).^2 ))  /    sum(sum(  abs(S0).^2 )) );%)/norm(abs(Si).^2)
 %     diC(i)=sqrt(    norm( abs(  sqrt(abs(S0).^2) - sqrt(abs(Si).^2)  ).^2, 'fro')  /    norm(  abs(S0).^2 , 'fro') );%)/norm(abs(Si).^2)
     diR(i)=sqrt(sum(abs(SUT-xt).^2)/sum(abs(SUT).^2));%)/norm(abs(Si).^2)
-    xc=max(abs(xcorr(SUT,xt,50)))/(sqrt(sum(abs(SUT).^2)*sum(abs(xt).^2)));
-    diR(i)=(1-xc);%)/norm(abs(Si).^2)
-    
     % plot(t,real(xt)); drawnow();
     i=i+1;
-    
-%     if mod(i,20)==1
-%     updatePlot(h1,xlimsZoom,t,tstft,fstft,xt0,SUT,xt,stft,Si,diC,diR)
-%     end
-end
-
-
     updatePlot(h1,xlimsZoom,t,tstft,fstft,xt0,SUT,xt,stft,Si,diC,diR)
-
-
-
-
-
-
-
-
+end
 
 
 
@@ -222,19 +171,24 @@ ylims=ylim(); xlim(xlimsZoom); ylim(ylims)
 subplot(3,2,5:6)
 yyaxis left
 plot(20*log10(diC))
-ylabel('Normalized inconsistency (dB)')
 yyaxis right
 % plot(20*log10(diC)); hold on
-plot(10*log10(diR))
-ylabel('10*log10(1-[corr. coeff])')
+plot(20*log10(diR))
 legend('Convergence Curve (GL)','spectral convergence');%,'reconstruction error')
-xlabel('Iteration'); 
+xlabel('Iteration'); ylabel('Normalized inconsistency (dB)')
 set(gca,'FontSize',FS)
 drawnow();
 %
 end
-
-
+%
+%
+% overlapAmount=numel(winInds)/(windowCenters(2)-windowCenters(1));
+% checkCola_2D=zeros(winLen,overlapAmount);
+% for i=1:overlapAmount
+% %     checkCola_2D(:,i)=circshift(win,(i-1)*winInc);
+%  checkCola_2D(:,i)=analysisWin.*circshift(win,(i-1)*winInc);
+% end
+% figure;plot(sum(checkCola_2D.'))
 
 
 
@@ -249,9 +203,6 @@ for i=1:nIncs
 end
 % istft=istft;
 end
-
-
-
 
 
 
