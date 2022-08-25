@@ -3,7 +3,7 @@
 addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 %% Time frequency vectors definition
 
-lent=2^14;                      % Signal length
+lent=2^13;                      % Signal length
 tWind=800e-9;                   % Time window span
 
 
@@ -14,12 +14,12 @@ scale=1;
 
 
 
-%% spgm parameters
+%% stft parameters
 
 % Adjust these parameters as needed
-winLen=2^9;
-winInc=winLen/2^4;%winLen-1;%/(2^2);
-interpAmount_t=1; % For now, make this a power of 2 (or 1)!!
+winLen=2^8;
+winInc=winLen;%winLen-1;%/(2^2);
+interpAmount_t=4; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
 % win=hann(winLen+2).^3;win=win(2:end-1)';%ones(1,winLen);
@@ -51,7 +51,7 @@ winInds=(1:winLen)-winLen/2;
 % SUT=exp(1j*pi*sin(2*pi*(c/2*t.^2+fini*t))).*superGauss(0,tWind/3,10,t,tWind/2);
 % SUT=sin(2*pi*(c/2*t.^2+fini*t))+1;%.*superGauss(0,tWind/3,10,t,tWind/2);
 
-fmax=Fs/30;
+fmax=Fs/2;
 SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
 % SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
 %     superGauss(0,sutBW,10,f,0).*(exp(-1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
@@ -65,54 +65,54 @@ SUT=nifft(SUTf,Fs);
 
 %% Spectrogram Algorithm
 
-% Get stft from windowIncrease Above
-spgm=get_spgm(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT);
-stftRaw=abs(spgm).^2;
-fstft_raw=f;%((1:winLen)-winLen/2)/winLen*Fs;
-tstft_raw=linspace(t(1),t(end),numel(spgm(1,:)));
+% Get spgm from windowIncrease Above
+stft=get_stft(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT);
+spgmRaw=abs(stft).^2;
+fspgm_raw=f;%((1:winLen)-winLen/2)/winLen*Fs;
+tspgm_raw=linspace(t(1),t(end),numel(stft(1,:)));
 
-% figure;imagesc(stftRaw);
+% figure;imagesc(spgmRaw);
 
 % Setup interpolation
 nIncsInterp=nIncs*interpAmount_t;
 windowCentersInterp=(1:nIncsInterp)*winInc/interpAmount_t;
 
-tstft=linspace(t(1),t(end),numel(spgm(1,:))*interpAmount_t);
-fstft=linspace(f(1),f(end),numel(fstft_raw)*interpAmount_f);%fstft_raw;
+tspgm=linspace(t(1),t(end),numel(stft(1,:))*interpAmount_t);
+fspgm=linspace(f(1),f(end),numel(fspgm_raw)*interpAmount_f);%fspgm_raw;
 
-% [tstft_rawM,fstft_rawM]=meshgrid(tstft_raw,fstft);
-% [tstftM,fstftM]=meshgrid(tstft,fstft);
-
-
-% stft=interp2(tstft_rawM,fstft_rawM,stftRaw,tstftM,fstftM,'spline');
-% stft=griddata(tstft_rawM,fstft_rawM,stftRaw,tstftM,fstftM,'natural');
+[tspgm_rawM,fspgm_rawM]=meshgrid(tspgm_raw,fspgm);
+[tspgmM,fspgmM]=meshgrid(tspgm,fspgm);
 
 
-% stft1=griddedInterpolant(tstft_rawM,fstft_rawM,stftRaw,tstftM,fstftM,'linear');
-% stftInterpolant=griddedInterpolant({tstft_raw,fstft_raw},stftRaw','nearest');
+spgm=interp2(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'spline');
+% spgm=griddata(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'natural');
 
-% stftInterp=stftInterpolant({tstft,fstft})';
-% stft=griddata(tstft_rawM,fstft_rawM,ab,tstftM,fstftM);
+
+% spgm1=griddedInterpolant(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'linear');
+% spgmInterpolant=griddedInterpolant({tspgm_raw,fspgm_raw},spgmRaw','nearest');
+
+% spgmInterp=spgmInterpolant({tspgm,fspgm})';
+% spgm=griddata(tspgm_rawM,fspgm_rawM,ab,tspgmM,fspgmM);
 % 
-stft=stftRaw;%imgaussfilt(stftInterp,interpAmount_t/2);
+% spgm=spgmRaw;%imgaussfilt(spgmInterp,interpAmount_t/2);
 % figure;subplot(2,1,1)
-% imagesc(stftRaw)
+% imagesc(spgmRaw)
 % subplot(2,1,2)
-% imagesc(stft)
+% imagesc(spgm)
 
 %% Iterative Griffin and Lim algorithm
 
 
-% istft=get_ispgm(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S);
+% ispgm=get_istft(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S);
 %
-% figure;plot(real(istft)); hold on; %plot(imag(istft)); %plot(abs(istft));
+% figure;plot(real(ispgm)); hold on; %plot(imag(ispgm)); %plot(abs(ispgm));
 % plot(SUT)
-% legend('Real istft','real SUT')
-winLenInterp=numel(fstft)*interpAmount_f;
+% legend('Real ispgm','real SUT')
+winLenInterp=numel(fspgm)*interpAmount_f;
 winInterp=interp1(linspace(0,1,lent),win,linspace(0,1,winLenInterp));
-winIndsInterp=(1:numel(fstft))-round(numel(fstft)/2);
-overlapAmount=(sum(win))/winInc;%numel(winIndsInterp)/(windowCentersInterp(2)-windowCentersInterp(1)); % This is the "overlapamount" AFTER interpolation
-analysisWin=winInterp/overlapAmount; % Analysis window for the inverse STFT
+winIndsInterp=(1:numel(fspgm))-round(numel(fspgm)/2);
+overlapAmount=interpAmount_t*(sum(win))/winInc;%numel(winIndsInterp)/(windowCentersInterp(2)-windowCentersInterp(1)); % This is the "overlapamount" AFTER interpolation
+analysisWin=winInterp/overlapAmount; % Analysis window for the inverse spgm
 
 % 
 % 
@@ -128,10 +128,10 @@ analysisWin=winInterp/overlapAmount; % Analysis window for the inverse STFT
 % 
 
 
-S0=sqrt(stft).*exp(1j*rand(size(stft))*2*pi);%.*(-1*(spgm<0));%.*exp(1j*rand(size(stft))*2*pi); % Seed spgm
-S0Mag=abs(sqrt(stft)); % S0 has the correct amplitude, but not the correct phase
+S0=sqrt(spgm).*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
+S0Mag=abs(sqrt(spgm)); % S0 has the correct amplitude, but not the correct phase
 % % % % S0=sggm;
-xt=get_ispgm(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
+xt=get_istft(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
 xt0=xt; % This is the first initial guess
 
 maxIteration=200;
@@ -148,10 +148,10 @@ xlimsZoom=t(round(lent/2))+winLen*dt*[-2 2];
 
 while i<maxIteration+1
     
-    Si=get_spgm(nIncsInterp,winIndsInterp,windowCentersInterp,lent,winInterp,dt,winLenInterp,xt);         % Get STFT of present signal guess xt
+    Si=get_stft(nIncsInterp,winIndsInterp,windowCentersInterp,lent,winInterp,dt,winLenInterp,xt);         % Get spgm of present signal guess xt
     Sip1=S0Mag.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
     Sip1(isnan(Sip1))=0;
-    xt=get_ispgm(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,Sip1);
+    xt=get_istft(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,Sip1);
     % di(i)=sqrt(sum(sum(abs(abs(Si)-abs(Sip1)).^2))
     % di(i)=norm(abs(abs(Si)-abs(Sip1)).^2)/norm(abs(Si).^2)
 %     di(i)=(norm(abs(Si)-abs(Sip1))).^2;%)/norm(abs(Si).^2)
@@ -166,12 +166,12 @@ while i<maxIteration+1
     i=i+1;
     
     if mod(i,5)==1
-    updatePlot(h1,xlimsZoom,t,tstft,fstft,xt0,SUT,xt,stft,Si,diC,diR)
+    updatePlot(h1,xlimsZoom,t,tspgm,fspgm,xt0,SUT,xt,spgm,Si,diC,diR)
     end
 end
 
 
-    updatePlot(h1,xlimsZoom,t,tstft,fstft,xt0,SUT,xt,stft,Si,diC,diR)
+    updatePlot(h1,xlimsZoom,t,tspgm,fspgm,xt0,SUT,xt,spgm,Si,diC,diR)
 
 
 
@@ -183,15 +183,15 @@ end
 
 
 
-function updatePlot(h1,xlimsZoom,t,tstft,fstft,xt0,SUT,xt,stft,Si,diC,diR)
+function updatePlot(h1,xlimsZoom,t,tspgm,fspgm,xt0,SUT,xt,spgm,Si,diC,diR)
 figure(h1);
 FS=16;
 subplot(3,2,1)
-imagesc(tstft,fstft,stft)
-title('SUT STFT')
+imagesc(tspgm,fspgm,spgm)
+title('SUT spgm')
 subplot(3,2,2)
-imagesc(tstft,fstft,abs(Si).^2)
-title('current Iteration STFT')
+imagesc(tspgm,fspgm,abs(Si).^2)
+title('current Iteration spgm')
 subplot(3,2,3)
 plotIniFin(t,xt0,xt,SUT,FS)
 subplot(3,2,4)
@@ -217,22 +217,22 @@ end
 
 
 
-function istft=get_ispgm(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S)
-% Reconstruct temporal waveform from stft by the overlap and add technique
+function ispgm=get_istft(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S)
+% Reconstruct temporal waveform from spgm by the overlap and add technique
 
-istft=zeros(1,lent); % Initialize variable
+ispgm=zeros(1,lent); % Initialize variable
 
 % figure;
 for i=1:nIncs
     
     ift=nifft(S(:,i),Fs);
 %     sutInds=mod(winInds+windowCenters(i),lent)+1;
-    istft=istft+circshift(analysisWin,windowCenters(i)).*ift.';%,;
+    ispgm=ispgm+circshift(analysisWin,windowCenters(i)).*ift.';%,;
     
     
     
 %     yyaxis left; hold off
-% plot(abs(istft)); hold off
+% plot(abs(ispgm)); hold off
 %     yyaxis right; 
 %     plot(abs(ift)); hold on; 
 %     plot(analysisWin/max(analysisWin)*max(abs(abs(nifft(S(:,i),Fs)))))
@@ -241,8 +241,8 @@ for i=1:nIncs
 %     drawnow()
 end
 
-% istft=circshift(istft,lent/2);
-% istft=istft;
+% ispgm=circshift(ispgm,lent/2);
+% ispgm=ispgm;
 end
 
 
@@ -250,14 +250,14 @@ end
 
 
 
-function spgm=get_spgm(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT)
+function stft=get_stft(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT)
 
 
-spgm=zeros(lent,nIncs);
+stft=zeros(lent,nIncs);
 
 for i=1:nIncs
 %     sutInds=mod(winInds+windowCenters(i),lent)+1;
-    spgm(:,i)=nfft(SUT.*circshift(win,windowCenters(i)),dt);
+    stft(:,i)=nfft(SUT.*circshift(win,windowCenters(i)),dt);
 end
 
 end
@@ -310,7 +310,7 @@ end
 % set(gca,'FontSize',FS)
 % 
 % subplot(2,2,3:4)
-% imagesc(tstft,fstft,stft);
+% imagesc(tspgm,fspgm,spgm);
 % ylim([-fmax fmax])
 % xlabel('Time'); ylabel('Frequency');
 % set(gca,'FontSize',FS)
