@@ -71,7 +71,7 @@ stftRaw=abs(spgm).^2;
 fstft_raw=f;%((1:winLen)-winLen/2)/winLen*Fs;
 tstft_raw=linspace(t(1),t(end),numel(spgm(1,:)));
 
-figure;imagesc(stftRaw);
+% figure;imagesc(stftRaw);
 
 % Setup interpolation
 nIncsInterp=nIncs*interpAmount_t;
