@@ -5,32 +5,42 @@ addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 
 load('OSOdataCross.mat');
 
-fSpecExpRaw=fSpecGHz; spgmExpRaw=spgm; tSpecExp=tSpecns;
-winLen=2^nextpow2(numel(fSpecExpRaw));
-fSpecExp=linspace(fSpecExpRaw(1),fSpecExpRaw(end),winLen);
-spgmRaw=interp2fun(tSpecExp,fSpecExpRaw,spgmExpRaw,tSpecExp,fSpecExp);
-
-lent=nextpow2(numel(spgmRaw));
-nWindsNoOverlap=nextpow2(numel(tSpecExp));
-tSpec=(1:nWindsNoOverlap)*(tSpecExp(2)-tSpecExp(1));
-fSpec=(1:lent)*(fSpecExp(2)-fSpecExp(1));
+fSpecExpRaw=fSpecGHz*1e9; spgmExpRaw=spgm; tSpecExp=tSpecns*1e-9;
+winLen_t=62.5e-12 ;%2^nextpow2(numel(fSpecExpRaw));
 
 
-lent=numel(spgmRaw);                      % Signal length
-tWind=tSpec(end)-tSpec(1);                   % Time window span
+tWind=winLen_t*round(1+(tSpecExp(end)-tSpecExp(1))/winLen_t); % The total length of t dictates the minimum required frequency resolution
+TargetResolution=winLen_t/(2^8);
+freqPadNeeded=round((1/TargetResolution-2*fSpecExpRaw(end))*tWind/2)*2; %%%%%%%%%% rounding to 2 because I'm lazy now. is this important?
+
+dfSER=fSpecExpRaw(2)-fSpecExpRaw(1);
+fSpexExpRawPadded=([1:freqPadNeeded+numel(fSpecExpRaw)]-round((freqPadNeeded+numel(fSpecExpRaw))/2))*dfSER;
+spgmExpRawPadded=[zeros(freqPadNeeded/2,numel(tSpecExp));spgmExpRaw;zeros(freqPadNeeded/2,numel(tSpecExp))];
 
 
-t=linspace(0,tWind,lent);
+lent=(tWind/TargetResolution);
+t=(1:lent)*TargetResolution;
 dt=t(2)-t(1);Fs=1/dt;f=linspace(-Fs/2,Fs/2,lent);df=(f(2)-f(1));
 fG=f*10^-9;tps=t*10^12;%GHz
 scale=1;
+
+
+fspgm_raw=f;
+tspgm_raw=tSpecExp;
+nWindsNoOverlap=numel(tSpecExp);
+spgmRaw=interp2fun(tSpecExp,fSpexExpRawPadded,spgmExpRawPadded,tspgm_raw,fspgm_raw);
+
+
+
+
+
 
 
 
 %% stft parameters
 
 % Adjust these parameters as needed
-
+winLen=winLen_t/dt;
 winInc=winLen;%winLen-1;%/(2^2);
 interpAmount_t=4; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
@@ -53,22 +63,25 @@ winInds=(1:winLen)-winLen/2;
 
 %% SUT generation
  
-% SUT defined experimentally!
+fmax=210e9;
+SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(120*22e-24)*(2*pi*f).^2/2));
+% SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
+%     superGauss(0,sutBW,10,f,0).*(exp(-1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
+SUT=nifft(SUTf,Fs);
+
+
 
 
 %% Spectrogram Algorithm
 
-fspgm_raw=fSpec;%((1:winLen)-winLen/2)/winLen*Fs;
-tspgm_raw=linspace(t(1),t(end),numel(stft(1,:)));
 
-% figure;imagesc(spgmRaw);
 
 % Setup interpolation
 nIncsInterp=nIncs*interpAmount_t;
 windowCentersInterp=(1:nIncsInterp)*winInc/interpAmount_t;
 
-tspgm=linspace(t(1),t(end),numel(stft(1,:))*interpAmount_t);
-fspgm=linspace(f(1),f(end),numel(fspgm_raw)*interpAmount_f);%fspgm_raw;
+tspgm=linspace(tspgm_raw(1),tspgm_raw(end),numel(tspgm_raw)*interpAmount_t);
+fspgm=linspace(fspgm_raw(1),fspgm_raw(end),numel(fspgm_raw)*interpAmount_f);%fspgm_raw;
 
 [tspgm_rawM,fspgm_rawM]=meshgrid(tspgm_raw,fspgm);
 [tspgmM,fspgmM]=meshgrid(tspgm,fspgm);
