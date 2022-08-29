@@ -5,12 +5,20 @@ addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 
 load('OSOdataCross.mat');
 
-fSpecExpRaw=fSpecGHz*1e9; spgmExpRaw=spgm; tSpecExp=tSpecns*1e-9;
+tIndsExpInterest=48:180;
+fSpecExpRaw=fSpecGHz*1e9;  tSpecExp=tSpecns(tIndsExpInterest)*1e-9;
+
+spgmExpRaw=spgm(:,tIndsExpInterest);
+spgmExpRaw(spgmExpRaw<8.4)=0;%
+spgmExpRaw(spgmExpRaw>8.4)=spgmExpRaw(spgmExpRaw>8.4)-8.4;
+
 winLen_t=62.5e-12 ;%2^nextpow2(numel(fSpecExpRaw));
 
 
 tWind=winLen_t*round(1+(tSpecExp(end)-tSpecExp(1))/winLen_t); % The total length of t dictates the minimum required frequency resolution
-TargetResolution=winLen_t/(2^8);
+TargetResolution=winLen_t/(2^5);
+
+
 freqPadNeeded=round((1/TargetResolution-2*fSpecExpRaw(end))*tWind/2)*2; %%%%%%%%%% rounding to 2 because I'm lazy now. is this important?
 
 dfSER=fSpecExpRaw(2)-fSpecExpRaw(1);
@@ -42,17 +50,17 @@ spgmRaw=interp2fun(tSpecExp,fSpexExpRawPadded,spgmExpRawPadded,tspgm_raw,fspgm_r
 % Adjust these parameters as needed
 winLen=winLen_t/dt;
 winInc=winLen;%winLen-1;%/(2^2);
-interpAmount_t=4; % For now, make this a power of 2 (or 1)!!
+interpAmount_t=2; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
 % win=hann(winLen+2).^3;win=win(2:end-1)';%ones(1,winLen);
 
 winSec=ones(1,winLen);
 
-% windowInds=(1:winLen)-winLen/2;
-% win=superGauss(0,winLen/2,100,windowInds,0);
+windowInds=(1:lent)-lent/2;
+win=superGauss(0,winLen/2,5,windowInds,0);
 
-win=zeros(1,lent); win(round(lent/2)-winLen/2:round(lent/2)+winLen/2-1)=winSec;
+% win=zeros(1,lent); win(round(lent/2)-winLen/2:round(lent/2)+winLen/2-1)=winSec;
 win=circshift(win,lent/2);
 
 % No need to change the ones below
@@ -62,15 +70,15 @@ winInds=(1:winLen)-winLen/2;
 
 
 %% SUT generation
- 
-fmax=210e9;
-SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(120*22e-24)*(2*pi*f).^2/2));
+
+fmax=190e9;
+SUTf=superGauss(0,fmax,4,f,0).*(exp(1j*(105*22e-24)*(2*pi*f).^2/2))+superGauss(0,fmax,10,f,0).*(exp(-1j*(105*22e-24)*(2*pi*f).^2/2));
 % SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
 %     superGauss(0,sutBW,10,f,0).*(exp(-1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
 SUT=nifft(SUTf,Fs);
 
 
-
+% spgmRaw=abs(get_stft(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT)); 
 
 %% Spectrogram Algorithm
 
@@ -83,33 +91,12 @@ windowCentersInterp=(1:nIncsInterp)*winInc/interpAmount_t;
 tspgm=linspace(tspgm_raw(1),tspgm_raw(end),numel(tspgm_raw)*interpAmount_t);
 fspgm=linspace(fspgm_raw(1),fspgm_raw(end),numel(fspgm_raw)*interpAmount_f);%fspgm_raw;
 
-[tspgm_rawM,fspgm_rawM]=meshgrid(tspgm_raw,fspgm);
-[tspgmM,fspgmM]=meshgrid(tspgm,fspgm);
-
-spgm=interp2(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'spline');
 % spgm=griddata(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'natural');
+ spgm=interp2fun(tspgm_raw,fspgm,spgmRaw,tspgm,fspgm);
 
-
-% spgm1=griddedInterpolant(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'linear');
-% spgmInterpolant=griddedInterpolant({tspgm_raw,fspgm_raw},spgmRaw','nearest');
-
-% spgmInterp=spgmInterpolant({tspgm,fspgm})';
-% spgm=griddata(tspgm_rawM,fspgm_rawM,ab,tspgmM,fspgmM);
-% 
-% spgm=spgmRaw;%imgaussfilt(spgmInterp,interpAmount_t/2);
-% figure;subplot(2,1,1)
-% imagesc(spgmRaw)
-% subplot(2,1,2)
-% imagesc(spgm)
 
 %% Iterative Griffin and Lim algorithm
 
-
-% ispgm=get_istft(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S);
-%
-% figure;plot(real(ispgm)); hold on; %plot(imag(ispgm)); %plot(abs(ispgm));
-% plot(SUT)
-% legend('Real ispgm','real SUT')
 winLenInterp=numel(fspgm)*interpAmount_f;
 winInterp=interp1(linspace(0,1,lent),win,linspace(0,1,winLenInterp));
 winIndsInterp=(1:numel(fspgm))-round(numel(fspgm)/2);
@@ -117,26 +104,13 @@ overlapAmount=interpAmount_t*(sum(win))/winInc;%numel(winIndsInterp)/(windowCent
 analysisWin=winInterp/overlapAmount; % Analysis window for the inverse spgm
 
 % 
-% 
-% 
-% checkCola_2D=zeros(1,lent);%winLen,overlapAmount*2);
-% % figure; hold on
-% for i=1:nIncs
-% %     checkCola_2D(:,i)=circshift(win,(i-1)*winInc);
-%  checkCola_2D=checkCola_2D+circshift(analysisWin,(i-1)*winInc).*circshift(winInterp,(i-1)*winInc);
-% % plot(circshift(analysisWin,(i-1)*winInc)); hold on; plot(circshift(circshift(winInterp,lent/2),(i-1)*winInc)); drawnow()
-% end
-% figure;plot(checkCola_2D)
-% 
-
-
-S0=sqrt(spgm).*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
+S0=sqrt(spgm);%.*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
 S0Mag=abs(sqrt(spgm)); % S0 has the correct amplitude, but not the correct phase
-% % % % S0=sggm;
+
 xt=get_istft(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
 xt0=xt; % This is the first initial guess
 
-maxIteration=200;
+maxIteration=2000;
 i=1;
 
 % Convergence criterion
@@ -147,7 +121,7 @@ diR=di;
 h1=figure;
 h1.Position=[55 117 990 861];%[-1528 112 821 865];
 xlimsZoom=t(round(lent/2))+winLen*dt*[-2 2];
-
+SUTnorm=SUT/max(real(SUT));
 while i<maxIteration+1
     
     Si=get_stft(nIncsInterp,winIndsInterp,windowCentersInterp,lent,winInterp,dt,winLenInterp,xt);         % Get spgm of present signal guess xt
@@ -167,8 +141,9 @@ while i<maxIteration+1
     % plot(t,real(xt)); drawnow();
     i=i+1;
     
+    
     if mod(i,5)==1
-    updatePlot(h1,xlimsZoom,t,tspgm,fspgm,xt0,SUT,xt,spgm,Si,diC,diR)
+    updatePlot(h1,xlimsZoom,t,tspgm,fspgm,xt0,real(SUTnorm*max(real(xt))),xt,spgm,Si,diC,diR)
     end
 end
 
@@ -177,7 +152,12 @@ end
 
 
 
-
+figure;
+plot(t,real(xt));
+hold on ;
+plot(t,abs(xt)); 
+yyaxis right; 
+plot(t,unwrap(angle(xt)))
 
 
 
@@ -275,6 +255,7 @@ Aq=interp2(xm,ym,A,xqm,yqm,'spline');
 
 
 end
+
 
 
 

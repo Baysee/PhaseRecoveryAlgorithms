@@ -51,7 +51,7 @@ winInds=(1:winLen)-winLen/2;
 % SUT=exp(1j*pi*sin(2*pi*(c/2*t.^2+fini*t))).*superGauss(0,tWind/3,10,t,tWind/2);
 % SUT=sin(2*pi*(c/2*t.^2+fini*t))+1;%.*superGauss(0,tWind/3,10,t,tWind/2);
 
-fmax=Fs/2;
+fmax=Fs/10;
 SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
 % SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
 %     superGauss(0,sutBW,10,f,0).*(exp(-1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
@@ -80,11 +80,13 @@ windowCentersInterp=(1:nIncsInterp)*winInc/interpAmount_t;
 tspgm=linspace(t(1),t(end),numel(stft(1,:))*interpAmount_t);
 fspgm=linspace(f(1),f(end),numel(fspgm_raw)*interpAmount_f);%fspgm_raw;
 
-[tspgm_rawM,fspgm_rawM]=meshgrid(tspgm_raw,fspgm);
-[tspgmM,fspgmM]=meshgrid(tspgm,fspgm);
+% [tspgm_rawM,fspgm_rawM]=meshgrid(tspgm_raw,fspgm);
+% [tspgmM,fspgmM]=meshgrid(tspgm,fspgm);
+% 
+% 
+% spgm=interp2(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'spline');
 
-
-spgm=interp2(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'spline');
+ spgm=interp2fun(tspgm_raw,fspgm,spgmRaw,tspgm,fspgm);
 % spgm=griddata(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'natural');
 
 
@@ -261,6 +263,20 @@ for i=1:nIncs
 end
 
 end
+
+
+function Aq=interp2fun(x,y,A,xq,yq)
+
+[xm,ym]=meshgrid(x,y);
+[xqm,yqm]=meshgrid(xq,yq);
+Aq=interp2(xm,ym,A,xqm,yqm,'spline');
+
+
+
+end
+
+
+
 
 
 
