@@ -16,7 +16,7 @@ winLen_t=62.5e-12 ;%2^nextpow2(numel(fSpecExpRaw));
 
 
 tWind=winLen_t*round(1+(tSpecExp(end)-tSpecExp(1))/winLen_t); % The total length of t dictates the minimum required frequency resolution
-TargetResolution=winLen_t/(2^5);
+TargetResolution=winLen_t/(28);%2^5);
 
 
 freqPadNeeded=round((1/TargetResolution-2*fSpecExpRaw(end))*tWind/2)*2; %%%%%%%%%% rounding to 2 because I'm lazy now. is this important?
@@ -26,7 +26,7 @@ fSpexExpRawPadded=([1:freqPadNeeded+numel(fSpecExpRaw)]-round((freqPadNeeded+num
 spgmExpRawPadded=[zeros(freqPadNeeded/2,numel(tSpecExp));spgmExpRaw;zeros(freqPadNeeded/2,numel(tSpecExp))];
 
 
-lent=(tWind/TargetResolution);
+lent=round(tWind/TargetResolution);
 t=(1:lent)*TargetResolution;
 dt=t(2)-t(1);Fs=1/dt;f=linspace(-Fs/2,Fs/2,lent);df=(f(2)-f(1));
 fG=f*10^-9;tps=t*10^12;%GHz
@@ -48,9 +48,12 @@ spgmRaw=interp2fun(tSpecExp,fSpexExpRawPadded,spgmExpRawPadded,tspgm_raw,fspgm_r
 %% stft parameters
 
 % Adjust these parameters as needed
-winLen=winLen_t/dt;
+winLen=round(winLen_t/dt);
+if (winLen_t/dt-round(winLen_t/dt))>0.01
+    warning('big rounding off winLen_t?')
+end
 winInc=winLen;%winLen-1;%/(2^2);
-interpAmount_t=2; % For now, make this a power of 2 (or 1)!!
+interpAmount_t=2^3  ; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
 % win=hann(winLen+2).^3;win=win(2:end-1)';%ones(1,winLen);
