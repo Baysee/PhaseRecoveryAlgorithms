@@ -3,7 +3,8 @@
 % addpath('/Volumes/Extreme SSD/MATLAB_DataAnalysis/analysisDocs')
 addpath( '/Users/ben/Documents/MATLAB/library' )
 
-generalFolder='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData/spectrogram_20211109/';
+generalFolder='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\spectrogram_20211109\';
+% generalFolder='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData/spectrogram_20211109/';
 apexFolder='ApexControl/20211118/Menlo/62p5ps/';
 
 %% Bandwidth demonstration -- 62.5 ps time lens
