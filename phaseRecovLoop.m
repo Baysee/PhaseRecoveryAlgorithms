@@ -14,12 +14,26 @@ xt=xt0;
 
 %%% Over correction parameters
 % FROM FGLA
-nominalAlpha=0.8;%0.8;%.8;
-alpha=nominalAlpha;
+alpha1=0.4;%.7;%8;%0.8;%.8;
+alpha2=0.5;
+alpha3=0.5;
+% FROM FORG OVERCorrection
+beta1=1.2;
+beta2=1.3;
+beta3=1.4;
+
+
+
+
+alpha1=0; alpha2=alpha1;alpha3=alpha1;
+beta1=1; beta2=beta1;beta3=beta1;
+
+alpha=alpha1;
 tn=S0; tnm1=S0;
 
-% FROM FORG OVERCorrection
-beta=0
+
+
+beta=beta1;
 
 i=1;
 while i<maxIteration+1
@@ -29,12 +43,16 @@ while i<maxIteration+1
     Si=get_stft_fullSigLen(nIncsInterp,windowCentersInterp,lent,winInterp,dt,xt);         % Get spgm of present signal guess xt
 %     Si=Si+alpha*(Si-tn)+beta*(spgm-abs(Si).^2)./abs(Si).^2;
   
-if i>2
-Si=Si+alpha*(Si-tn)+beta*(spgm-abs(Si).^2)./abs(Si).^2;
-end
-    Sip1=S0.*exp(1j*angle(Si));%.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
-    Sip1=S0.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
-    Sip1(isnan(Sip1))=0;
+% if i>2
+Si=Si+alpha*(Si-tn);%+beta*(spgm-abs(Si).^2)./abs(Si).^2;
+% Si=Si.*(S0./Si).^beta; Sip1(isnan(Sip1))=0;
+% end
+%     Sip1=S0.*exp(1j*angle(Si));%.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
+   Sip1=Si.*abs(S0./Si).^beta; Sip1(isnan(Sip1))=0;
+
+% Sip1=S0.*Si./abs(Si); Sip1(isnan(Sip1))=0;                          % Enforce magnitude along with calculated phase from Si
+   
+%    Sip1=S0.*exp(1j*angle(Si));%.*Si./abs(Si); 
 %     Sip1=Sip1+alpha*(Sip1-tn);
 % Sip1=Sip1+alpha*(Sip1-tn)+beta*(spgm-abs(Sip1).^2)./abs(Sip1).^2;
 % Sip1=Sip1+alpha*(Si-tn)+beta*Sip1.*(spgm-abs(Si).^2)./abs(Si).^2;
@@ -66,13 +84,17 @@ end
 
 
 
-%     if 10*log10(diC(i))<-8;
-    if (diC(i))<(1-nominalAlpha) && alpha~=0;
+    if 10*log10(diC(i))<-8;
+%     if (diC(i))<(1-nominalAlpha) && alpha~=0;
+  
+    beta=beta2;
+   alpha=alpha2
         convDiff=10*log10((diC(i-1)-diC(i))/diC(i))
-        alpha=1-diC(i);
+%         alpha=1-diC(i);
         
-        if convDiff<-20
-            alpha=0.999
+        if convDiff<-20 && 10*log10(diC(i))<-8;
+            beta=beta3;
+            alpha=alpha3;
         end
 % 
 %         if abs(convDiff)>nominalAlpha

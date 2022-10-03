@@ -102,7 +102,7 @@ S0=sqrt(spgm);%.*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(s
 
 xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
 
-maxIteration=50;
+maxIteration=150;
 
 % Convergence criterion
 di=zeros(1,maxIteration);

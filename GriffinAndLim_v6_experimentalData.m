@@ -3,21 +3,21 @@ addpath( 'C:\Users\Lord Photon\Documents\MATLAB\library_repo\library' )
 addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 %% Load data and set time-frequency vectors
 
-% % % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross_filtv2.mat');
-% load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOZigZag.mat');
-% tIndsExpInterest=68:129;
-% fSpecGHz=fSpecGHz/56.4*55;
-% winLen_t=200e-12
-% lowerClip=0.1;
-% extraFreqNeeded=4;
+% % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross_filtv2.mat');
+load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOZigZag.mat');
+tIndsExpInterest=68:129;
+fSpecGHz=fSpecGHz/56.4*55;
+winLen_t=200e-12
+lowerClip=0.08;
+extraFreqNeeded=4;
 
-
-load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross.mat');
-tIndsExpInterest=70:160;
-winLen_t=62.5e-12
-lowerClip=8;
-extraFreqNeeded=1;
-
+% 
+% load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross.mat');
+% tIndsExpInterest=70:160;
+% winLen_t=62.5e-12
+% lowerClip=8;
+% extraFreqNeeded=1;
+% 
 
 
 
@@ -81,7 +81,7 @@ if (winLen_t/dt-round(winLen_t/dt))>0.01
     warning('big rounding off winLen_t?')
 end
 winInc=winLen;%winLen-1;%/(2^2);
-interpAmount_t=2  ; % For now, make this a power of 2 (or 1)!!
+interpAmount_t=1  ; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
 % win=hann(winLen+2).^3;win=win(2:end-1)';%ones(1,winLen);
@@ -89,9 +89,9 @@ interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 winSec=ones(1,winLen);
 
 windowInds=(1:lent)-lent/2;
-win=superGauss(0,winLen/2,2,windowInds,0);
+% win=superGauss(0,winLen/2,2,windowInds,0);
 
-% win=zeros(1,lent); win(round(lent/2)-winLen/2:round(lent/2)+winLen/2-1)=winSec;
+win=zeros(1,lent); win(round(lent/2)-winLen/2:round(lent/2)+winLen/2-1)=winSec;
 win=circshift(win,lent/2);
 
 % No need to change the ones below
@@ -112,13 +112,14 @@ fspgm=linspace(fspgm_raw(1),fspgm_raw(end),numel(fspgm_raw)*interpAmount_f);%fsp
 % spgm=griddata(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'natural');
 spgminterp1=interp2fun(tspgm_raw,fspgm,spgmRaw,tspgm,fspgm);
 
-
-sigma=1;
-%   lowerClip=7.7;
-% spgm(spgm<lowerClip)=0;%
-% spgm(spgm>lowerClip)=spgm(spgm>lowerClip)-lowerClip;
-spgminterp1=spgminterp1-mean(spgminterp1(:,1));
-spgm= imgaussfilt(spgminterp1,sigma);
+spgm=spgminterp1;
+% 
+% sigma=1;
+% %   lowerClip=7.7;
+% % spgm(spgm<lowerClip)=0;%
+% % spgm(spgm>lowerClip)=spgm(spgm>lowerClip)-lowerClip;
+% spgminterp1=spgminterp1-mean(spgminterp1(:,1));
+% spgm= imgaussfilt(spgminterp1,sigma);
 
 
 
@@ -145,7 +146,7 @@ S0=sqrt(spgm);%.*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(s
 
 xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
 
-maxIteration=50;
+maxIteration=100;
 
 % Convergence criterion
 di=zeros(1,maxIteration);
