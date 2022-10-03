@@ -7,9 +7,10 @@ x1_(1)=1;
 x1=repmat(x1_,[1,lent/numel(x1_)]);
 
 x2=singleGauss(2^2,lent/2,1:lent,0);
+x2=circshift(x2,lent/2)
 
 x3=conv(x1,x2);
-[x4,b]=deconv(x3,x1);
+[x4,b]=deconv(x3,x2);
 
 figure;
 subplot(3,2,1)
