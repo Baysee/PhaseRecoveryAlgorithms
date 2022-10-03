@@ -7,16 +7,17 @@ load('OSOdataCross.mat');
 
 tIndsExpInterest=48:180;
 fSpecExpRaw=fSpecGHz*1e9;  tSpecExp=tSpecns(tIndsExpInterest)*1e-9;
-
-spgmExpRaw=spgm(:,tIndsExpInterest);
-spgmExpRaw(spgmExpRaw<8.4)=0;%
-spgmExpRaw(spgmExpRaw>8.4)=spgmExpRaw(spgmExpRaw>8.4)-8.4;
+spgmIni=spgm;
+lowerClip=0;
+spgmExpRaw=spgmIni(:,tIndsExpInterest);
+spgmExpRaw(spgmExpRaw<lowerClip)=0;%
+spgmExpRaw(spgmExpRaw>lowerClip)=spgmExpRaw(spgmExpRaw>lowerClip)-lowerClip;
 
 winLen_t=62.5e-12 ;%2^nextpow2(numel(fSpecExpRaw));
 
 
 tWind=winLen_t*round(1+(tSpecExp(end)-tSpecExp(1))/winLen_t); % The total length of t dictates the minimum required frequency resolution
-TargetResolution=winLen_t/(28);%2^5);
+TargetResolution=winLen_t/(2^5);
 
 
 freqPadNeeded=round((1/TargetResolution-2*fSpecExpRaw(end))*tWind/2)*2; %%%%%%%%%% rounding to 2 because I'm lazy now. is this important?
@@ -53,7 +54,7 @@ if (winLen_t/dt-round(winLen_t/dt))>0.01
     warning('big rounding off winLen_t?')
 end
 winInc=winLen;%winLen-1;%/(2^2);
-interpAmount_t=2^3  ; % For now, make this a power of 2 (or 1)!!
+interpAmount_t=2  ; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
 % win=hann(winLen+2).^3;win=win(2:end-1)';%ones(1,winLen);
@@ -70,6 +71,7 @@ win=circshift(win,lent/2);
 nIncs=lent/winInc; % By making winInc a power of 2, we can make sure to have an integer number of windows.
 windowCenters=(1:nIncs)*winInc;
 winInds=(1:winLen)-winLen/2;
+
 
 
 %% SUT generation
@@ -97,6 +99,16 @@ fspgm=linspace(fspgm_raw(1),fspgm_raw(end),numel(fspgm_raw)*interpAmount_f);%fsp
 % spgm=griddata(tspgm_rawM,fspgm_rawM,spgmRaw,tspgmM,fspgmM,'natural');
  spgm=interp2fun(tspgm_raw,fspgm,spgmRaw,tspgm,fspgm);
 
+ 
+ 
+ 
+ 
+ 
+figure;
+subplot(2,1,1)
+imagesc(spgmIni);
+subplot(2,1,2)
+imagesc(spgm)
 
 %% Iterative Griffin and Lim algorithm
 

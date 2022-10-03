@@ -3,7 +3,7 @@
 addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 %% Time frequency vectors definition
 
-lent=2^14;                      % Signal length
+lent=2^13;                      % Signal length
 tWind=800e-9;                   % Time window span
 
 
@@ -17,8 +17,8 @@ scale=1;
 %% stft parameters
 
 % Adjust these parameters as needed
-winLen=2^9;
-winInc=winLen/2^4;%winLen-1;%/(2^2);
+winLen=2^8;
+winInc=1;%winLen/2^4;%winLen-1;%/(2^2);
 interpAmount_t=1; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
@@ -68,7 +68,7 @@ SUT=nifft(SUTf,Fs);
 %% Spectrogram Algorithm
 
 % Get spgm from windowIncrease Above
-stft=get_stft(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT);
+stft=get_stft_winInds(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT);
 spgmRaw=abs(stft).^2;
 fspgm_raw=((1:winLen)-winLen/2)/winLen*Fs;
 tspgm_raw=linspace(t(1),t(end),numel(stft(1,:)));
@@ -140,7 +140,7 @@ imagesc(spgm)
 %% Iterative Griffin and Lim algorithm
 
 
-% ispgm=get_istft(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S);
+% ispgm=get_istft_winInds(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S);
 %
 % figure;plot(real(ispgm)); hold on; %plot(imag(ispgm)); %plot(abs(ispgm));
 % plot(SUT)
@@ -153,7 +153,7 @@ analysisWin=winInterp/(overlapAmount); % Analysis window for the inverse spgm
 
 S0=sqrt(spgm);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
 S0Mag=abs(sqrt(spgm)); % S0 has the correct amplitude, but not the correct phase
-xt=get_istft(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
+xt=get_istft_winInds(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
 xt0=xt; % This is the first initial guess
 
 maxIteration=200;
@@ -170,10 +170,10 @@ xlimsZoom=t(round(lent/2))+winLen*dt*[-2 2];
 
 while i<maxIteration+1
     
-    Si=get_stft(nIncsInterp,winIndsInterp,windowCentersInterp,lent,winInterp,dt,winLenInterp,xt);         % Get spgm of present signal guess xt
+    Si=get_stft_winInds(nIncsInterp,winIndsInterp,windowCentersInterp,lent,winInterp,dt,winLenInterp,xt);         % Get spgm of present signal guess xt
     Sip1=S0Mag.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
     Sip1(isnan(Sip1))=0;
-    xt=get_istft(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,Sip1);
+    xt=get_istft_winInds(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,Sip1);
     % di(i)=sqrt(sum(sum(abs(abs(Si)-abs(Sip1)).^2))
     % di(i)=norm(abs(abs(Si)-abs(Sip1)).^2)/norm(abs(Si).^2)
 %     di(i)=(norm(abs(Si)-abs(Sip1))).^2;%)/norm(abs(Si).^2)
@@ -187,9 +187,9 @@ while i<maxIteration+1
     % plot(t,real(xt)); drawnow();
     i=i+1;
     
-%     if mod(i,20)==1
-%     updatePlot(h1,xlimsZoom,t,tspgm,fspgm,xt0,SUT,xt,spgm,Si,diC,diR)
-%     end
+    if mod(i,4)==1
+    updatePlot(h1,xlimsZoom,t,tspgm,fspgm,xt0,SUT,xt,spgm,Si,diC,diR)
+    end
 end
 
 
@@ -233,38 +233,6 @@ xlabel('Iteration');
 set(gca,'FontSize',FS)
 drawnow();
 %
-end
-
-
-
-
-
-function ispgm=get_istft(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S)
-% Reconstruct temporal waveform from spgm by the overlap and add technique
-
-ispgm=zeros(1,lent); % Initialize variable
-
-for i=1:nIncs
-    sutInds=mod(winInds+windowCenters(i),lent)+1;
-    ispgm(sutInds)=ispgm(sutInds)+analysisWin.*nifft(S(:,i),Fs).';
-end
-% ispgm=ispgm;
-end
-
-
-
-
-
-
-function stft=get_stft(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT)
-
-stft=zeros(winLen,nIncs);
-
-for i=1:nIncs
-    sutInds=mod(winInds+windowCenters(i),lent)+1;
-    stft(:,i)=nfft(SUT(sutInds).*win,dt);
-end
-
 end
 
 

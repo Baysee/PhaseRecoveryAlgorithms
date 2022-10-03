@@ -4,7 +4,7 @@ addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 %% Time frequency vectors definition
 
 lent=2^13;                      % Signal length
-tWind=800e-9;                   % Time window span
+tWind=6e-9;                   % Time window span
 
 
 t=linspace(0,tWind,lent);
@@ -18,61 +18,60 @@ scale=1;
 
 % Adjust these parameters as needed
 winLen=2^8;
-winInc=winLen;%winLen-1;%/(2^2);
-interpAmount_t=4; % For now, make this a power of 2 (or 1)!!
+winLent=winLen*dt
+winInc=winLen/2;%winLen-1;%/(2^2);
+interpAmount_t=2; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
 % win=hann(winLen+2).^3;win=win(2:end-1)';%ones(1,winLen);
 
 winSec=ones(1,winLen);
 
-% windowInds=(1:winLen)-winLen/2;
+windowInds=(1:winLen)-winLen/2;
+windowInds=(1:lent)-lent/2;
 % win=superGauss(0,winLen/2,100,windowInds,0);
+% win=zeros(1,lent); win(round(lent/2)-winLen/2:round(lent/2)+winLen/2-1)=winSec;
 
-win=zeros(1,lent); win(round(lent/2)-winLen/2:round(lent/2)+winLen/2-1)=winSec;
+% windowInds=(1:lent)-lent/2;
+win=superGauss(0,winLen/2,200,windowInds,0);
 win=circshift(win,lent/2);
 
 % No need to change the ones below
-nIncs=lent/winInc; % By making winInc a power of 2, we can make sure to have an integer number of windows.
+nIncs=round(lent/winInc); % By making winInc a power of 2, we can make sure to have an integer number of windows.
 windowCenters=(1:nIncs)*winInc;
 winInds=(1:winLen)-winLen/2;
 
 
 %% SUT generation
 
-% SUT=exp(1j*pi*sin(2*pi/(40*winLen*dt)*t));
-
-
-
-% % % % % % Linearly chirped signal
-% fmax=Fs;
-% fini=0; ffin=fmax/20;
-% c=(ffin-fini)/tWind;
-% SUT=exp(1j*pi*sin(2*pi*(c/2*t.^2+fini*t))).*superGauss(0,tWind/3,10,t,tWind/2);
-% SUT=sin(2*pi*(c/2*t.^2+fini*t))+1;%.*superGauss(0,tWind/3,10,t,tWind/2);
-
-fmax=Fs/10;
-SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
+fmax=411e9/2;%Fs/10;
+% SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
+SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(120*22e-24/2)*(2*pi*f).^2/2))+superGauss(0,fmax,10,f,0).*(exp(-1j*(120*22e-24/2)*(2*pi*f).^2/2));
 % SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
 %     superGauss(0,sutBW,10,f,0).*(exp(-1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
 SUT=nifft(SUTf,Fs);
-% SUT=superGauss(0,tWind/20,1,t,2*tWind/3)+superGauss(0,tWind/10,2,t,tWind/3);
 
-% SUT=superGauss(0,tWind/3,10,t,tWind/2);
-
-
+SUT=ones(size(SUT));
 
 
 %% Spectrogram Algorithm
 
 % Get spgm from windowIncrease Above
-stft=get_stft(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT);
+stft=get_stft_fullSigLen(nIncs,windowCenters,lent,win,dt,SUT);
 spgmRaw=abs(stft).^2;
 fspgm_raw=f;%((1:winLen)-winLen/2)/winLen*Fs;
 tspgm_raw=linspace(t(1),t(end),numel(stft(1,:)));
 
-% figure;imagesc(spgmRaw);
 
+%%% PLaying around with COLA
+sutRecon=get_istft_fullSigLen(lent,windowCenters,win/(sum(win)/winInc),Fs,nIncs,stft);
+figure;
+% for i=1:winInc
+% plot(circshift(win,windowCenters(i)),'--')
+% hold on
+% end
+% figure;imagesc(spgmRaw);
+figure;plot(sutRecon); hold on; plot(circshift(win,lent/2))
 % Setup interpolation
 nIncsInterp=nIncs*interpAmount_t;
 windowCentersInterp=(1:nIncsInterp)*winInc/interpAmount_t;
@@ -133,10 +132,10 @@ analysisWin=winInterp/overlapAmount; % Analysis window for the inverse spgm
 S0=sqrt(spgm).*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
 S0Mag=abs(sqrt(spgm)); % S0 has the correct amplitude, but not the correct phase
 % % % % S0=sggm;
-xt=get_istft(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
+xt=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
 xt0=xt; % This is the first initial guess
 
-maxIteration=200;
+maxIteration=100;
 i=1;
 
 % Convergence criterion
@@ -148,28 +147,32 @@ h1=figure;
 h1.Position=[55 117 990 861];%[-1528 112 821 865];
 xlimsZoom=t(round(lent/2))+winLen*dt*[-2 2];
 
+smoothingAmount=40;
 while i<maxIteration+1
     
-    Si=get_stft(nIncsInterp,winIndsInterp,windowCentersInterp,lent,winInterp,dt,winLenInterp,xt);         % Get spgm of present signal guess xt
+    Si=get_stft_fullSigLen(nIncsInterp,windowCentersInterp,lent,winInterp,dt,xt);         % Get spgm of present signal guess xt
     Sip1=S0Mag.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
     Sip1(isnan(Sip1))=0;
-    xt=get_istft(lent,winIndsInterp,windowCentersInterp,analysisWin,Fs,nIncsInterp,Sip1);
+    xt=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,Sip1);
+    xt=(smooth(abs(xt),40).').*exp(1j*angle(xt));
     % di(i)=sqrt(sum(sum(abs(abs(Si)-abs(Sip1)).^2))
     % di(i)=norm(abs(abs(Si)-abs(Sip1)).^2)/norm(abs(Si).^2)
 %     di(i)=(norm(abs(Si)-abs(Sip1))).^2;%)/norm(abs(Si).^2)
     diC(i)=sqrt(    sum(sum( abs(  abs(S0) - abs(Si)  ).^2))  /    sum(sum(  abs(S0).^2 )) );%)/norm(abs(Si).^2)
 %     diC2(i)=sqrt(    sum(sum( abs(  sqrt(abs(S0).^2) - sqrt(abs(Si).^2)  ).^2 ))  /    sum(sum(  abs(S0).^2 )) );%)/norm(abs(Si).^2)
 %     diC(i)=sqrt(    norm( abs(  sqrt(abs(S0).^2) - sqrt(abs(Si).^2)  ).^2, 'fro')  /    norm(  abs(S0).^2 , 'fro') );%)/norm(abs(Si).^2)
-    diR(i)=sqrt(sum(abs(SUT-xt).^2)/sum(abs(SUT).^2));%)/norm(abs(Si).^2)
-    xc=max(abs(xcorr(SUT,xt,50)))/(sqrt(sum(abs(SUT).^2)*sum(abs(xt).^2)));
-    diR(i)=(1-xc);%)/norm(abs(Si).^2)
+%     diR(i)=sqrt(sum(abs(SUT-xt).^2)/sum(abs(SUT).^2));%)/norm(abs(Si).^2)
+%     xc=max(abs(xcorr(SUT,xt,50)))/(sqrt(sum(abs(SUT).^2)*sum(abs(xt).^2)));
+    diR(i)=0;%(1-xc);%)/norm(abs(Si).^2)
     
     % plot(t,real(xt)); drawnow();
-    i=i+1;
+
     
     if mod(i,5)==1
     updatePlot(h1,xlimsZoom,t,tspgm,fspgm,xt0,SUT,xt,spgm,Si,diC,diR)
     end
+    
+        i=i+1;
 end
 
 
@@ -218,76 +221,63 @@ end
 
 
 
-
-function ispgm=get_istft(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S)
-% Reconstruct temporal waveform from spgm by the overlap and add technique
-
-ispgm=zeros(1,lent); % Initialize variable
-
-% figure;
-for i=1:nIncs
-    
-    ift=nifft(S(:,i),Fs);
-%     sutInds=mod(winInds+windowCenters(i),lent)+1;
-    ispgm=ispgm+circshift(analysisWin,windowCenters(i)).*ift.';%,;
-    
-    
-    
-%     yyaxis left; hold off
-% plot(abs(ispgm)); hold off
-%     yyaxis right; 
-%     plot(abs(ift)); hold on; 
-%     plot(analysisWin/max(analysisWin)*max(abs(abs(nifft(S(:,i),Fs)))))
-%     hold off
-%     title(num2str(i))
-%     drawnow()
-end
-
-% ispgm=circshift(ispgm,lent/2);
-% ispgm=ispgm;
-end
-
-
-
-
-
-
-function stft=get_stft(nIncs,winInds,windowCenters,lent,win,dt,winLen,SUT)
-
-
-stft=zeros(lent,nIncs);
-
-for i=1:nIncs
-%     sutInds=mod(winInds+windowCenters(i),lent)+1;
-    stft(:,i)=nfft(SUT.*circshift(win,windowCenters(i)),dt);
-end
-
-end
-
-
-function Aq=interp2fun(x,y,A,xq,yq)
-
-[xm,ym]=meshgrid(x,y);
-[xqm,yqm]=meshgrid(xq,yq);
-Aq=interp2(xm,ym,A,xqm,yqm,'spline');
-
-
-
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+% 
+% function ispgm=get_istft(lent,winInds,windowCenters,analysisWin,Fs,nIncs,S)
+% % Reconstruct temporal waveform from spgm by the overlap and add technique
+% 
+% ispgm=zeros(1,lent); % Initialize variable
+% 
+% % figure;
+% for i=1:nIncs
+%     
+%     ift=nifft(S(:,i),Fs);
+% %     sutInds=mod(winInds+windowCenters(i),lent)+1;
+%     ispgm=ispgm+circshift(analysisWin,windowCenters(i)).*ift.';%,;
+%     
+%     
+%     
+% %     yyaxis left; hold off
+% % plot(abs(ispgm)); hold off
+% %     yyaxis right; 
+% %     plot(abs(ift)); hold on; 
+% %     plot(analysisWin/max(analysisWin)*max(abs(abs(nifft(S(:,i),Fs)))))
+% %     hold off
+% %     title(num2str(i))
+% %     drawnow()
+% end
+% 
+% % ispgm=circshift(ispgm,lent/2);
+% % ispgm=ispgm;
+% end
+% 
+% 
+% 
+% 
+% 
+% 
+% function Aq=interp2fun(x,y,A,xq,yq)
+% 
+% [xm,ym]=meshgrid(x,y);
+% [xqm,yqm]=meshgrid(xq,yq);
+% Aq=interp2(xm,ym,A,xqm,yqm,'spline');
+% 
+% 
+% 
+% end
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
 
 
 

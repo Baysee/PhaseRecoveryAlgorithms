@@ -181,12 +181,12 @@ drawnow();
 %
 end
 %
-%
+% 
 % overlapAmount=numel(winInds)/(windowCenters(2)-windowCenters(1));
 % checkCola_2D=zeros(winLen,overlapAmount);
 % for i=1:overlapAmount
 % %     checkCola_2D(:,i)=circshift(win,(i-1)*winInc);
-%  checkCola_2D(:,i)=analysisWin.*circshift(win,(i-1)*winInc);
+% checkCola_2D(:,i)=analysisWin.*circshift(win,(i-1)*winInc);
 % end
 % figure;plot(sum(checkCola_2D.'))
 
