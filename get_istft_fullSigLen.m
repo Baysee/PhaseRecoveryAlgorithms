@@ -11,7 +11,7 @@ for i=1:nIncs
 %     sutInds=mod(winInds+windowCenters(i),lent)+1;
     ispgm=ispgm+circshift(analysisWin,windowCenters(i)).*ift.';%,;
     
-%     
+% %     
 % %     
 %     yyaxis left; hold off
 % plot(real(ispgm)); hold off

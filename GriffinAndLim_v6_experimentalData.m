@@ -4,12 +4,16 @@ addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 %% Load data and set time-frequency vectors
 
 % % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross_filtv2.mat');
-load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOZigZag.mat');
-tIndsExpInterest=68:129;
-fSpecGHz=fSpecGHz/56.4*55;
+% load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOZigZag.mat');
+% load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOZigZag.mat');
+load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOzigzag_deconv.mat');
+% tIndsExpInterest=68:129;
+tIndsExpInterest=1:186;
+fSpecGHz=fSpecGHz;%/56.4*55;
 winLen_t=200e-12
-lowerClip=0.08;
-extraFreqNeeded=4;
+lowerClip=0.00000;
+extraFreqNeeded=1;
+phaseAnalysis=1;
 
 % 
 % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross.mat');
@@ -17,12 +21,12 @@ extraFreqNeeded=4;
 % winLen_t=62.5e-12
 % lowerClip=8;
 % extraFreqNeeded=1;
-% 
+% phaseAnalysis=2;
 
 
 
 
-spgmIni=spgm;
+spgmIni=spgm.^2;
 % restrict time axis and clip lower values to avoid noise issues.
 
 spgmExpRaw=spgmIni(:,tIndsExpInterest);
@@ -30,23 +34,28 @@ spgmExpRaw(spgmExpRaw<lowerClip)=0;%
 spgmExpRaw(spgmExpRaw>lowerClip)=spgmExpRaw(spgmExpRaw>lowerClip)-lowerClip;
 
 
-fSpecExpRaw=fSpecGHz*1e9;  tSpecExp=tSpecns(tIndsExpInterest)*1e-9;
+fSpecExp=fSpecGHz*1e9;  tSpecExp=tSpecns(tIndsExpInterest)*1e-9;
 % Setup time-frequency axes
 %2^nextpow2(numel(fSpecExpRaw));
 %%% Used to have a +1 in the tWind???? % tWind=winLen_t*round(1+(tSpecExp(end)-tSpecExp(1))/winLen_t); % The total length of t dictates the minimum required frequency resolution
 tWind=numel(tSpecExp)*winLen_t;%(tSpecExp(end)-tSpecExp(1));%winLen_t*round((tSpecExp(end)-tSpecExp(1))/winLen_t); % The total length of t dictates the minimum required frequency resolution
-TargetResolution=1/(extraFreqNeeded*2*fSpecExpRaw(end));%448e9;%winLen_t/(2^5); % Target temporal resolution of the STFT (i.e., frequency span)
+TargetResolution=10e-12;%1/(extraFreqNeeded*2*fSpecExpRaw(end));%448e9;%winLen_t/(2^5); % Target temporal resolution of the STFT (i.e., frequency span)
 % % %  Used to force to round by 2 % % % freqPadNeeded=round((1/TargetResolution-2*fSpecExpRaw(end))*tWind/2)*2; %%%%%%%%%% rounding to 2 because I'm lazy now. is this important?
-freqPadNeeded=round((1/TargetResolution-2*fSpecExpRaw(end))/2*tWind)*2; %%%%%%%%%% rounding to 2 because I'm lazy now. is this important?
+% freqPadNeeded=round((1/TargetResolution-2*fSpecExpRaw(end))/2*tWind)*2; %%%%%%%%%% rounding to 2 because I'm lazy now. is this important?
 
-dfSER=fSpecExpRaw(2)-fSpecExpRaw(1);
-fSpexExpRawPadded=([1:freqPadNeeded+numel(fSpecExpRaw)]-round((freqPadNeeded+numel(fSpecExpRaw))/2))*dfSER;
-spgmExpRawPadded=[zeros(freqPadNeeded/2,numel(tSpecExp));spgmExpRaw;zeros(freqPadNeeded/2,numel(tSpecExp))]; % If freqPadNeeded/2 doesn't work this will cause an error
+lent=round(tWind/TargetResolution/2)*2;
+dt=tWind/lent;
+dfSER=1/tWind;%;fSpecExpRaw(2)-fSpecExpRaw(1);
+fSpecExpRawPadded=[-1/(2*TargetResolution),fSpecExp,1/(2*TargetResolution)];%(1:lent)*dfSER-1/(2*TargetResolution);
+% fSpexExpRawPadded=([1:freqPadNeeded+numel(fSpecExpRaw)]-round((freqPadNeeded+numel(fSpecExpRaw))/2))*dfSER;
+
+% spgmExpRawPadded=[zeros(freqPadNeeded/2,numel(tSpecExp));spgmExpRaw;zeros(freqPadNeeded/2,numel(tSpecExp))]; % If freqPadNeeded/2 doesn't work this will cause an error
+spgmExpRawPadded=[zeros(1,numel(tSpecExp));spgmExpRaw;zeros(1,numel(tSpecExp))]; % If freqPadNeeded/2 doesn't work this will cause an error
 
 
-lent=round(tWind/TargetResolution);
-t=(1:lent)*TargetResolution;
-dt=t(2)-t(1);Fs=1/dt;f=linspace(-Fs/2,Fs/2,lent);df=(f(2)-f(1));
+% lent=round(tWind/TargetResolution);
+t=(1:lent)*dt;
+Fs=1/dt;f=linspace(-Fs/2,Fs/2,lent);df=(f(2)-f(1));
 fG=f*10^-9;tps=t*10^12;%GHz
 scale=1;
 
@@ -54,8 +63,11 @@ scale=1;
 fspgm_raw=f;
 tspgm_raw=tSpecExp;
 nWindsNoOverlap=numel(tSpecExp);
-spgmRaw=interp2fun(tSpecExp,fSpexExpRawPadded,spgmExpRawPadded,tspgm_raw,fspgm_raw);
+% spgmRaw=interp2fun(tSpecExp,fSpecExpRawPadded,spgmExpRawPadded,tspgm_raw,fspgm_raw);
+spgmRaw=interp2fun(tSpecExp,fSpecExpRawPadded,spgmExpRawPadded,tspgm_raw,fspgm_raw);
 
+numToDecimate=round((1/(2*dt)-fSpecExp(end))/df);
+spgmRaw(1:numToDecimate,:)=0; spgmRaw(end-numToDecimate:end,:)=0;
 
 %% SUT generation
 % Used to compared with a simulation SUT... doesn't seem very relevant.
@@ -146,7 +158,7 @@ S0=sqrt(spgm);%.*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(s
 
 xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
 
-maxIteration=100;
+maxIteration=30;
 
 % Convergence criterion
 di=zeros(1,maxIteration);
@@ -167,8 +179,65 @@ diR=di;
 
 
 
+%% Phase analysis
+
+
+if phaseAnalysis==1
+    
+recovPhaseRaw=unwrap(angle(xt));
+linFit=fit(t',recovPhaseRaw','poly1')
+recovPhaseflat=recovPhaseRaw-linFit(t)';
+recovPhase=real(filtSG_tf(recovPhaseflat,t,f,200,2,1));
+
+ figure;plot(recovPhase)
+%  fitReg={1:721,860:1590};
+
+ [~,locsTop]=findpeaks(recovPhase,'MinPeakProminence',50);
+ [~,locsBot]=findpeaks(-recovPhase,'MinPeakProminence',50);
+ 
+ rangeTop=200; rangeBot=100;
+ topInds=((1:rangeTop)-rangeTop/2)+locsTop';
+ botInds=((1:rangeBot)-rangeBot/2)+locsBot';
+ fitReg={topInds,botInds};
+ 
+ 
+ figure;
+ subplot(3,1,1)
+ plot(t,recovPhase); hold on
+ for ifit=1:2
+%  iFit=2;
+ 
+ tfits=t(fitReg{ifit}); yfits=recovPhase(fitReg{ifit});
+beta2=[];
+ for i=1:numel(tfits(:,1))
+     tfit=tfits(i,:); yfit=yfits(i,:);
+ fitObj=fit(tfit',yfit','poly2')
+ 
+beta2(i)=2/fitObj.p1
+plot(tfit,yfit); plot(tfit,fitObj(tfit));plot( tfit(round(end/2)),yfit(round(end/2)),'*')
+ end
+ beta2s{ifit}=beta2;
+ end
+yyaxis right
+plot(t,abs(xt).^2)
+ 
+ 
+  subplot(3,1,2)
+plot(topInds(:,rangeTop/2),beta2s{1},'*')
+hold on
+plot(topInds(:,rangeTop/2),mean(beta2s{1})*ones(1,numel(beta2s{1})))
+title(['mean beta2: ' num2str(mean(beta2s{1})*1e24) 'ps2 (' num2str(mean(beta2s{1})*1e24/22) ' km SMF)'])
+
+   subplot(3,1,3)
+plot(botInds(:,rangeBot/2),beta2s{2},'*')
+hold on
+plot(botInds(:,rangeBot/2),mean(beta2s{2})*ones(1,numel(beta2s{2})))
+title(['mean beta2: ' num2str(mean(beta2s{2})*1e24) 'ps2 (' num2str(mean(beta2s{2})*1e24/22) ' km SMF)'])
+
+end
 
 
 
-
-
+if phaseAnalysis==2
+    
+end

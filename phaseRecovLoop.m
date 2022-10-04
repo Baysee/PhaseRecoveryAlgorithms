@@ -14,13 +14,13 @@ xt=xt0;
 
 %%% Over correction parameters
 % FROM FGLA
-alpha1=0.4;%.7;%8;%0.8;%.8;
-alpha2=0.5;
+alpha1=0.2;%.7;%8;%0.8;%.8;
+alpha2=0.4;
 alpha3=0.5;
 % FROM FORG OVERCorrection
-beta1=1.2;
-beta2=1.3;
-beta3=1.4;
+beta1=1.1;
+beta2=1.2;
+beta3=1.3;
 
 
 
@@ -84,7 +84,7 @@ Si=Si+alpha*(Si-tn);%+beta*(spgm-abs(Si).^2)./abs(Si).^2;
 
 
 
-    if 10*log10(diC(i))<-8;
+    if 10*log10(diC(i))<-5;
 %     if (diC(i))<(1-nominalAlpha) && alpha~=0;
   
     beta=beta2;
@@ -92,7 +92,7 @@ Si=Si+alpha*(Si-tn);%+beta*(spgm-abs(Si).^2)./abs(Si).^2;
         convDiff=10*log10((diC(i-1)-diC(i))/diC(i))
 %         alpha=1-diC(i);
         
-        if convDiff<-20 && 10*log10(diC(i))<-8;
+        if convDiff<-20 && 10*log10(diC(i))<-7;
             beta=beta3;
             alpha=alpha3;
         end

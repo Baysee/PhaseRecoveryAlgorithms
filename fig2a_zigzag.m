@@ -4,7 +4,9 @@ addpath('/Volumes/Extreme SSD/MATLAB_DataAnalysis/analysisDocs')
 addpath( '/Users/ben/Documents/MATLAB/library' )
 addpath( '/Users/ben/Documents/MATLAB/library/export_fig' )
 addpath('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData')
+addpath('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\TLSanalysisDocs\MenloAnalysisDocs_20220201');
 generalFolder_scope='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData/spectrogram_20211109/';
+generalFolder_scope='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\spectrogram_20211109\'
 apexFolder='/ApexControl/';
 
 %% Bandwidth demonstration
@@ -79,7 +81,7 @@ xlabel('Time (ns)'); ylabel('Photovoltage (mV)')
 
 %% Process Spectrogram Data
 % Interpolate data and adjust length to
-nInterp=1000;%1e1;
+nInterp=10;%1e1;
 lent=numel(xsIni)*nInterp;
 xInterp=linspace(xsIni(1), xsIni(end),lent);
 yInterp=interp1(xsIni,ysIni,xInterp,'spline');
@@ -94,15 +96,27 @@ spgm=reshape(ys,ntl,nLenses);
 
 
 reconvPW=200e-12*5/56.4; 
-measPW=28e-12;
-measIRF=singleGauss(measPW/(2*sqrt(2*log(2))),(xs(end)+xs(1))/2,xs(1:2:end),0);
-measIRF=circshift(measIRF,round(numel(measIRF)/4));
+measPW=35e-12;
+minLen=round(measPW/dtInterp)*2;
+tIRF=(1:2^nextpow2(minLen))*dtInterp; tIRF=tIRF-tIRF(end/2);
+measIRF=singleGauss(measPW/(2*sqrt(2*log(2))),(xs(end)+xs(1))/2,xs(1:end),0);
+measIRF=circshift(measIRF,round(numel(measIRF)/2));
 reconvIRF=singleGauss(reconvPW/(2*sqrt(2*log(2))),-5.73e-9,xs,0);
+reconvIRF=circshift(reconvIRF,round(numel(measIRF)/2));
 
+zerPad=zeros(1,numel(measIRF)-1);%zeros(1,numel(ys)-1
 ys1=ys;
-ysDeconv=deconv(ys+1,measIRF+1);
+[ysDeconv,remA]=deconv([ys,zerPad],measIRF);%circshift(measIRF,-38));
 
-
+% ysReconv=conv(ysDeconv,reconvIRF);
+% 
+figure;plot(ys); hold on; plot(circshift(ysDeconv/max(ysDeconv),8).^2);
+plot(ysReconv/max(ysReconv))
+% % 
+ys=abs(ysDeconv);
+% 
+% deconvSpec_f=nfft(ys)./nfft(measIRF);deconvSpec_f(isnan(deconvSpec_f))=0;
+% deconvSpec=nifft(deconvSpec_f);
 
 % Center overal spectrogramçç
 halfShift=1;thresh=10;
