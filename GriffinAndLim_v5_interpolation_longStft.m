@@ -16,9 +16,9 @@ scale=1;
 
 %% SUT generation
 
-fmax=411e9/2;%Fs/10;
+fmax=31e9/2;%Fs/10;
 % SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
-SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(120*22e-24/2)*(2*pi*f).^2/2));%+superGauss(0,fmax,10,f,0).*(exp(-1j*(120*22e-24/2)*(2*pi*f).^2/2));
+SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(240*22e-24/2)*(2*pi*f).^2/2));%+superGauss(0,fmax,10,f,0).*(exp(-1j*(120*22e-24/2)*(2*pi*f).^2/2));
 % SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
 %     superGauss(0,sutBW,10,f,0).*(exp(-1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
 SUT=nifft(SUTf,Fs);

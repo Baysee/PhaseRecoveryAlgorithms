@@ -47,8 +47,8 @@ while i<maxIteration+1
 Si=Si+alpha*(Si-tn);%+beta*(spgm-abs(Si).^2)./abs(Si).^2;
 % Si=Si.*(S0./Si).^beta; Sip1(isnan(Sip1))=0;
 % end
-%     Sip1=S0.*exp(1j*angle(Si));%.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
-   Sip1=Si.*abs(S0./Si).^beta; Sip1(isnan(Sip1))=0;
+    Sip1=S0.*exp(1j*angle(Si));%.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
+%    Sip1=Si.*abs(S0./Si).^beta; Sip1(isnan(Sip1))=0;
 
 % Sip1=S0.*Si./abs(Si); Sip1(isnan(Sip1))=0;                          % Enforce magnitude along with calculated phase from Si
    

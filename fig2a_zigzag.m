@@ -6,7 +6,7 @@ addpath( '/Users/ben/Documents/MATLAB/library/export_fig' )
 addpath('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData')
 addpath('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\TLSanalysisDocs\MenloAnalysisDocs_20220201');
 generalFolder_scope='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData/spectrogram_20211109/';
-generalFolder_scope='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\spectrogram_20211109\'
+% generalFolder_scope='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\spectrogram_20211109\'
 apexFolder='/ApexControl/';
 
 %% Bandwidth demonstration
@@ -81,7 +81,7 @@ xlabel('Time (ns)'); ylabel('Photovoltage (mV)')
 
 %% Process Spectrogram Data
 % Interpolate data and adjust length to
-nInterp=10;%1e1;
+nInterp=250;%1e1;
 lent=numel(xsIni)*nInterp;
 xInterp=linspace(xsIni(1), xsIni(end),lent);
 yInterp=interp1(xsIni,ysIni,xInterp,'spline');
@@ -110,10 +110,12 @@ ys1=ys;
 
 % ysReconv=conv(ysDeconv,reconvIRF);
 % 
-figure;plot(ys); hold on; plot(circshift(ysDeconv/max(ysDeconv),8).^2);
-plot(ysReconv/max(ysReconv))
+ysDeconv2=circshift(ysDeconv/max(ysDeconv),8).^2;
+ysDeconv2(1:12)=0;
+figure;plot(ys); hold on; yyaxis right; plot(ysDeconv2);
+% plot(ysReconv/max(ysReconv))
 % % 
-ys=abs(ysDeconv);
+ys=abs(ysDeconv2);
 % 
 % deconvSpec_f=nfft(ys)./nfft(measIRF);deconvSpec_f(isnan(deconvSpec_f))=0;
 % deconvSpec=nifft(deconvSpec_f);
