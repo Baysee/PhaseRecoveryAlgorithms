@@ -14,13 +14,13 @@ xt=xt0;
 
 %%% Over correction parameters
 % FROM FGLA
-alpha1=0.2;%.7;%8;%0.8;%.8;
-alpha2=0.4;
-alpha3=0.5;
+alpha1=0.3;%.7;%8;%0.8;%.8;
+alpha2=0.5;
+alpha3=0.7;
 % FROM FORG OVERCorrection
-beta1=1.1;
-beta2=1.2;
-beta3=1.3;
+beta1=1.15;
+beta2=1.25;
+beta3=1.35;
 
 
 

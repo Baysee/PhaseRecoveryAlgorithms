@@ -5,14 +5,14 @@ addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 
 % % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross_filtv2.mat');
 % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOZigZag.mat');
-load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOzigzag_deconv2.mat');
+% load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOzigzag_deconv2.mat');
 % load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOZigZag.mat');
-% load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOzigzag_deconv.mat');
+load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOzigzag_deconv.mat');
 % tIndsExpInterest=68:129;
 tIndsExpInterest=2:179;
 fSpecGHz=fSpecGHz;%/(56.4e9*TargetResolution)
 winLen_t=200e-12
-lowerClip=max(max(spgm))/30;
+lowerClip=max(max(spgm))/10;
 nptPerWin=32;
 phaseAnalysis=1;
 nFreqElem=numel(fSpecGHz);%2000;
@@ -28,7 +28,7 @@ freqInds=round(linspace(1,numel(fSpecGHz),nFreqElem));
 
 
 
-spgmIni=spgm.^0.8;%(freqInds,:);
+spgmIni=spgm;%.^0.8;%(freqInds,:);
 % restrict time axis and clip lower values to avoid noise issues.
 
 spgmExpRaw=spgmIni(:,tIndsExpInterest);
@@ -73,8 +73,17 @@ scale=1;
 
 % Zero pad if needed
 if 1/(2*TargetResolution)>fSpecExp(end)
-fSpecExpRawPadded=[-1/(2*TargetResolution),fSpecExp,1/(2*TargetResolution)];%(1:lent)*dfSER-1/(2*TargetResolution);
-spgmExpRawPadded=[zeros(1,numel(tSpecExp));spgmExpRaw;zeros(1,numel(tSpecExp))]; % If freqPadNeeded/2 doesn't work this will cause an error
+    
+[a,nZeros]=find(f>-fMaxTLS/2,1);
+f_tls1=[f(1:nZeros-2),fSpecExp,-flip(f(1:nZeros-2))];
+padded1=[zeros(nZeros-2,nIncs);spgmExpRaw;zeros(nZeros-2,nIncs)];
+spgmExpRawPadded=interp2fun(tspgm_raw,f_tls1,padded1,tspgm_raw,f);
+% spgmExpRawPadded=imresize(padded1,[numel(tspgm_raw),numel(f)]);
+% stft(1:lent/2-winLen/2,:)=0;stft(lent/2+winLen/2:end,:)=0;
+
+
+% fSpecExpRawPadded=[-1/(2*TargetResolution),fSpecExp,1/(2*TargetResolution)];%(1:lent)*dfSER-1/(2*TargetResolution);
+% spgmExpRawPadded=[zeros(1,numel(tSpecExp));spgmExpRaw;zeros(1,numel(tSpecExp))]; % If freqPadNeeded/2 doesn't work this will cause an error
 else
 fSpecExpRawPadded=fSpecExp; spgmExpRawPadded=spgmExpRaw;
 end
@@ -94,7 +103,7 @@ if abs(winLen-round(winLen))<0.01
     warning('small rounding of winLen')
 end
 winInc=winLen;
-interpAmount_t=2  ; % For now, make this a power of 2 (or 1)!!
+interpAmount_t=1 ; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1  ; % For now, make this a power of 2 (or 1)!!
 
 
@@ -128,11 +137,16 @@ fspgm=linspace(fspgm_raw(1),fspgm_raw(end),numel(fspgm_raw)*interpAmount_f);%fsp
 % 
 % spgm=spgminterp1;
 
-spgm=abs(interp2fun(tspgm_raw,fSpecExpRawPadded,spgmExpRawPadded,tspgm,fspgm));
-
-% Remove the extrapolated noise
-numToDecimate=round((1/(2*dt)-fSpecExp(end))/df);
-spgm(1:numToDecimate,:)=0; spgm(end-numToDecimate:end,:)=0;
+% % % spgm=abs(interp2fun(tspgm_raw,fSpecExpRawPadded,spgmExpRawPadded,tspgm,fspgm));
+if interpAmount_t>1
+     spgm=abs(imresize(spgmExpRawPadded,[lent,numel(tspgm)]));
+else
+    spgm=spgmExpRawPadded;
+end
+% 
+% % Remove the extrapolated noise
+% numToDecimate=round((1/(2*dt)-fSpecExp(end))/df);
+% spgm(1:numToDecimate,:)=0; spgm(end-numToDecimate:end,:)=0;
 
 
 
@@ -167,7 +181,7 @@ iniPhase=exp(1j*normrnd(0,pi,size(S0)));
 
 xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0.*iniPhase);
 
-maxIteration=15;
+maxIteration=45;
 
 % Convergence criterion
 di=zeros(1,maxIteration);
@@ -184,6 +198,14 @@ xt1=xt;%
 % yyaxis right;
 % plot(t,unwrap(angle(xt)))
 %
+
+
+
+
+
+
+%% Phase analysis 
+
 %
 %
 sec1t=118:554;
@@ -238,7 +260,7 @@ beta2=[];
      tfit=tfits(i,:); yfit=yfits(i,:);
  fitObj=fit(tfit',yfit','poly2')
  
-beta2(i)=2/fitObj.p1
+beta2(i)=1/(2*fitObj.p1)
 %  pause(0.3)
 plot(tfit*1e9,yfit); plot(tfit*1e9,fitObj(tfit));plot( tfit(round(numel(yfit)/2))*1e9,yfit(round(numel(yfit)/2)),'*')
  end
