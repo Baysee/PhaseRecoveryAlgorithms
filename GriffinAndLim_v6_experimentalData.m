@@ -5,28 +5,30 @@ addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 
 % % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross_filtv2.mat');
 % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOZigZag.mat');
-% load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOzigzag_deconv2.mat');
+% load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOzigzag_deconv.mat');
 % load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOZigZag.mat');
-load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOzigzag_deconv.mat');
-% tIndsExpInterest=68:129;
-tIndsExpInterest=2:179;
-fSpecGHz=fSpecGHz;%/(56.4e9*TargetResolution)
-winLen_t=200e-12
-lowerClip=max(max(spgm))/10;
-nptPerWin=32;
-phaseAnalysis=1;
-nFreqElem=numel(fSpecGHz);%2000;
-freqInds=round(linspace(1,numel(fSpecGHz),nFreqElem));
+% load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOzigzag_deconv.mat');
 % 
-% load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross.mat');
-% tIndsExpInterest=70:160;
-% winLen_t=62.5e-12
-% lowerClip=8;
-% extraFreqNeeded=1;
-% phaseAnalysis=2;
+% tIndsExpInterest=2:179;
+% fSpecGHz=fSpecGHz;%/(56.4e9*TargetResolution)
+% winLen_t=200e-12
+% lowerClip=max(max(spgm))/15;
+% nptPerWin=32;
+% phaseAnalysis=1;
+% nFreqElem=numel(fSpecGHz);%2000;
+% freqInds=round(linspace(1,numel(fSpecGHz),nFreqElem));
+% % 
 
 
+load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross.mat');
+tIndsExpInterest=70:160;
+winLen_t=62.5e-12
+lowerClip=max(max(spgm))/2.5;
+nptPerWin=64;
+phaseAnalysis=2;
 
+
+fMaxTLS=fSpecGHz(end)*1e9*2;
 
 spgmIni=spgm;%.^0.8;%(freqInds,:);
 % restrict time axis and clip lower values to avoid noise issues.
@@ -71,15 +73,19 @@ Fs=1/dt;f=linspace(-Fs/2,Fs/2,lent);df=(f(2)-f(1));
 fG=f*10^-9;tps=t*10^12;%GHz
 scale=1;
 
+
+fspgm_raw=f;
+tspgm_raw=tSpecExp;
+SUT=zeros(1,lent);
 % Zero pad if needed
 if 1/(2*TargetResolution)>fSpecExp(end)
     
-[a,nZeros]=find(f>-fMaxTLS/2,1);
-f_tls1=[f(1:nZeros-2),fSpecExp,-flip(f(1:nZeros-2))];
-padded1=[zeros(nZeros-2,nIncs);spgmExpRaw;zeros(nZeros-2,nIncs)];
+[a,nZeros]=find(f>-abs(fMaxTLS)/2,1);
+f_tls1=[f(1:nZeros-1),fSpecExp,-flip(f(1:nZeros-1))];
+padded1=[zeros(nZeros-1,numel(spgmExpRaw(1,:)));spgmExpRaw;zeros(nZeros-1,numel(spgmExpRaw(1,:)))];
 spgmExpRawPadded=interp2fun(tspgm_raw,f_tls1,padded1,tspgm_raw,f);
 % spgmExpRawPadded=imresize(padded1,[numel(tspgm_raw),numel(f)]);
-% stft(1:lent/2-winLen/2,:)=0;stft(lent/2+winLen/2:end,:)=0;
+spgmExpRawPadded(1:nZeros,:)=0;spgmExpRawPadded(lent-nZeros:end,:)=0;
 
 
 % fSpecExpRawPadded=[-1/(2*TargetResolution),fSpecExp,1/(2*TargetResolution)];%(1:lent)*dfSER-1/(2*TargetResolution);
@@ -89,10 +95,6 @@ fSpecExpRawPadded=fSpecExp; spgmExpRawPadded=spgmExpRaw;
 end
 
 
-
-fspgm_raw=f;
-tspgm_raw=tSpecExp;
-SUT=zeros(1,lent);
 
 
 %% window Setup
@@ -290,5 +292,12 @@ end
 
 
 if phaseAnalysis==2
+    
+    
+    figure;
+    plot(t,abs(xt).^2); ylabel('intensity')
+    yyaxis right
+    plot(t,unwrap(angle(xt))); ylabel('angle (rad)')
+    xlabel('time (ns)')
     
 end
