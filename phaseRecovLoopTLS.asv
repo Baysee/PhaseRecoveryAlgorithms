@@ -1,4 +1,4 @@
-function [xt,Si]=phaseRecovLoop(nIncsInterp,windowCentersInterp,lent,winInterp,winLen,t,dt,xt0,tspgm,fspgm,spgm,SUT,analysisWin,Fs,maxIteration)
+function [xt,Si]=phaseRecovLoopTLS(nIncs,windowCenters,lent,winLen,t,f,dt,xt0,tspgm,fspgm,spgm,SUT,Fs,maxIteration,phit,phiw)
 
 % % % Plotting parameters
 h1=figure;
@@ -14,19 +14,21 @@ xt=xt0;
 
 %%% Over correction parameters
 % FROM FGLA
-alpha1=0.3;%.7;%8;%0.8;%.8;
-alpha2=0.5;
-alpha3=0.7;
+alpha1=0.1;%.7;%8;%0.8;%.8;
+alpha2=0.2;
+alpha3=0.9;
 % FROM FORG OVERCorrection
-beta1=1.15;
-beta2=1.25;
-beta3=1.35;
+beta1=1.5;
+beta2=1.6;
+beta3=1.8;
 
-
-
-
-alpha1=0; alpha2=alpha1;alpha3=alpha1;
-beta1=1; beta2=beta1;beta3=beta1;
+plotFilt=0;
+fMaxTLS=fspgm(end)-fspgm(1);
+filtm=50;
+xt=filterSig(filtm,fMaxTLS,xt0,plotFilt,f);
+% 
+% alpha1=0; alpha2=alpha1;alpha3=alpha1;
+% beta1=1; beta2=beta1;beta3=beta1;
 
 alpha=alpha1;
 tn=S0; tnm1=S0;
@@ -40,15 +42,15 @@ while i<maxIteration+1
    
 
     %     Si=get_stft_fullSigLen(nIncsInterp,winIndsInterp,windowCentersInterp,lent,winInterp,dt,winLenInterp,xt);         % Get spgm of present signal guess xt
-    Si=get_stft_fullSigLen(nIncsInterp,windowCentersInterp,lent,winInterp,dt,xt);         % Get spgm of present signal guess xt
+    Si=stft_TLS(xt,winLen,phit,phiw);%get_stft_fullSigLen(nIncsInterp,windowCentersInterp,lent,winInterp,dt,xt);         % Get spgm of present signal guess xt
 %     Si=Si+alpha*(Si-tn)+beta*(spgm-abs(Si).^2)./abs(Si).^2;
   
 % if i>2
 Si=Si+alpha*(Si-tn);%+beta*(spgm-abs(Si).^2)./abs(Si).^2;
 % Si=Si.*(S0./Si).^beta; Sip1(isnan(Sip1))=0;
 % end
-    Sip1=S0.*exp(1j*angle(Si));%.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
-%    Sip1=Si.*abs(S0./Si).^beta; Sip1(isnan(Sip1))=0;
+%     Sip1=S0.*exp(1j*angle(Si));%.*Si./abs(Si);%.*exp(1j*angle(Si));%.*Si./abs(Si);                           % Enforce magnitude along with calculated phase from Si
+   Sip1=Si.*abs(S0./Si).^beta; Sip1(isnan(Sip1))=0;
 
 % Sip1=S0.*Si./abs(Si); Sip1(isnan(Sip1))=0;                          % Enforce magnitude along with calculated phase from Si
    
@@ -57,7 +59,8 @@ Si=Si+alpha*(Si-tn);%+beta*(spgm-abs(Si).^2)./abs(Si).^2;
 % Sip1=Sip1+alpha*(Sip1-tn)+beta*(spgm-abs(Sip1).^2)./abs(Sip1).^2;
 % Sip1=Sip1+alpha*(Si-tn)+beta*Sip1.*(spgm-abs(Si).^2)./abs(Si).^2;
 
-    xt=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,Sip1);
+    xt=istft_TLS(Sip1,winLen,phit,phiw);%get_istft_fullSigLen(lent,windowCenters,analysisWin,Fs,nIncs,Sip1);
+xt=filterSig(filtm,fMaxTLS,xt,plotFilt,f);
 
 
     diC(i)=sqrt(    sum(sum( abs(  abs(S0) - abs(Si)  ).^2))  /    sum(sum(  abs(S0).^2 )) );%)/norm(abs(Si).^2)

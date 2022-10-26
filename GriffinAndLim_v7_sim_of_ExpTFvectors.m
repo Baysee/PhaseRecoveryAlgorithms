@@ -107,6 +107,7 @@ analysisWin=winInterp/overlapAmount; % Analysis window for the inverse spgm
 S0=sqrt(spgm);%.*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
 
 xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
+% xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,stft);
 
 maxIteration=50;
 

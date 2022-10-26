@@ -16,7 +16,7 @@ scale=1;
 
 %% SUT generation
 
-fmax=31e9/2;%Fs/10;
+fmax=180e9/2;%Fs/10;
 % SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
 SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(240*22e-24/2)*(2*pi*f).^2/2));%+superGauss(0,fmax,10,f,0).*(exp(-1j*(120*22e-24/2)*(2*pi*f).^2/2));
 % SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
@@ -29,27 +29,31 @@ SUT=nifft(SUTf,Fs);
 
 %% window Setup
 
+
 % Adjust these parameters as needed
+fMaxTLS=200e9;
 winLen=2^7;
 winLent=winLen*dt
-winInc=winLen/4;%winLen-1;%/(2^2);
+winInc=winLen;%winLen-1;%/(2^2);
 interpAmount_t=1; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
-
 
 winSec=ones(1,winLen);
 windowInds=(1:lent)-lent/2;
 % win=superGauss(0,winLen/2,100,windowInds,0);
 win=zeros(1,lent); win(round(lent/2)-winLen/2:round(lent/2)+winLen/2-1)=winSec;
-
 win=circshift(win,lent/2);
-
 
 % No need to change the ones below
 nIncs=round(lent/winInc); % By making winInc a power of 2, we can make sure to have an integer number of windows.
 windowCenters=(1:nIncs)*winInc;
 
 
+CL=2*pi*fMaxTLS/winLent;
+phi2=1/CL;
+
+phit=repmat( ((1:winLen)/winLen*winLent-winLent/2).^2*CL/2, [1,nIncs]) ;
+phiw=phi2/2*(2*pi*f).^2;
 
 
 
@@ -57,55 +61,39 @@ windowCenters=(1:nIncs)*winInc;
 %% Spectrogram Algorithm
 
 % Get spgm from windowIncrease Above
-stft=get_stft_fullSigLen(nIncs,windowCenters,lent,win,dt,SUT);
+[stft]=stft_TLS(SUT,winLen,phit,phiw);
+% [xt]=istft_TLS(stft,winLen,phit,phiw);
+% [stft2]=stft_TLS(xt,winLen,phit,phiw);
+
+% stft=get_stft_fullSigLen(nIncs,windowCenters,lent,win,dt,SUT);
 spgmRaw=abs(stft).^2;
-fspgm_raw=f;
-tspgm_raw=linspace(t(1),t(end),numel(stft(1,:)));
+% fspgm_raw=f;
+% tspgm_raw=linspace(t(1),t(end),numel(stft(1,:)));
 
 
-%%% PLaying around with COLA
-% sutRecon=get_istft_fullSigLen(lent,windowCenters,win/(sum(win)/winInc),Fs,nIncs,stft);
-% figure;
-% for i=1:winInc
-% plot(circshift(win,windowCenters(i)),'--')
-% hold on
-% end
-% figure;imagesc(spgmRaw);
-% figure;plot(sutRecon); hold on; plot(circshift(win,lent/2))
-% Setup interpolation
+tspgm=linspace(t(1),t(end),numel(stft(1,:)));
+% fspgm=linspace(f(1),f(end),numel(stft(:,1)));%fspgm_raw;
+fspgm=linspace(0,fMaxTLS,numel(stft(:,1)))-fMaxTLS/2;%fspgm_raw;
 
-%% Setup interpolation
-
-nIncsInterp=nIncs*interpAmount_t;
-windowCentersInterp=(1:nIncsInterp)*winInc/interpAmount_t;
-
-tspgm=linspace(t(1),t(end),numel(stft(1,:))*interpAmount_t);
-fspgm=linspace(f(1),f(end),numel(fspgm_raw)*interpAmount_f);%fspgm_raw;
-
- spgm=interp2fun(tspgm_raw,fspgm,spgmRaw,tspgm,fspgm);
-
-
-winLenInterp=numel(fspgm)*interpAmount_f;
-winInterp=interp1(linspace(0,1,lent),win,linspace(0,1,winLenInterp));
-winIndsInterp=(1:numel(fspgm))-round(numel(fspgm)/2);
-overlapAmount=interpAmount_t*(sum(win))/winInc;%numel(winIndsInterp)/(windowCentersInterp(2)-windowCentersInterp(1)); % This is the "overlapamount" AFTER interpolation
-analysisWin=winInterp/overlapAmount; % Analysis window for the inverse spgm
+ spgm=spgmRaw;
 
 
 %% Iterative Griffin and Lim algorithm
 
-S0=sqrt(spgm);%.*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
+S0=sqrt(spgm).*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
 
-xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
-xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,stft);
+xt0=istft_TLS(S0,winLen,phit,phiw);;%get_istft_fullSigLen(lent,windowCenters,analysisWin,Fs,nIncs,S0);
+xt_sut=istft_TLS(stft,winLen,phit,phiw);;%get_istft_fullSigLen(lent,windowCenters,analysisWin,Fs,nIncs,S0);
+% xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,stft);
 
-maxIteration=150;
+maxIteration=200;
 
 % Convergence criterion
 di=zeros(1,maxIteration);
 diC=di;
 diR=di;
-[xt,Si]=phaseRecovLoop(nIncsInterp,windowCentersInterp,lent,winInterp,winLen,t,dt,xt0,tspgm,fspgm,spgm,SUT,analysisWin,Fs,maxIteration);
+% [xt,Si]=phaseRecovLoop(nIncs,windowCenters,lent,win,winLen,t,dt,xt0,tspgm,fspgm,spgm,SUT,analysisWin,Fs,maxIteration);
+[xt,Si]=phaseRecovLoopTLS(nIncs,windowCenters,lent,winLen,t,f,dt,xt0,tspgm,fspgm,spgm,SUT,Fs,maxIteration,phit,phiw);
 %
 
 

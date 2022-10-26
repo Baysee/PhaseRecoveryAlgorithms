@@ -1,31 +1,31 @@
 % Spectrogram function
 addpath( 'C:\Users\Lord Photon\Documents\MATLAB\library_repo\library' )
 addpath( '/Users/ben/Documents/MATLAB/library_repo' )
+addpath('../phaseRecovery_Data');
 %% Load data and set time-frequency vectors
 
-% % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross_filtv2.mat');
+
 % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOZigZag.mat');
 % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOzigzag_deconv.mat');
 % load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOZigZag.mat');
-% load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOzigzag_deconv.mat');
-% 
-% tIndsExpInterest=2:179;
-% fSpecGHz=fSpecGHz;%/(56.4e9*TargetResolution)
-% winLen_t=200e-12
-% lowerClip=max(max(spgm))/15;
-% nptPerWin=32;
-% phaseAnalysis=1;
-% nFreqElem=numel(fSpecGHz);%2000;
-% freqInds=round(linspace(1,numel(fSpecGHz),nFreqElem));
+load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOzigzag_deconv.mat');
+tIndsExpInterest=2:179;
+fSpecGHz=fSpecGHz;%/(56.4e9*TargetResolution)
+winLen_t=200e-12
+lowerClip=max(max(spgm))/15;
+nptPerWin=32;
+phaseAnalysis=1;
+nFreqElem=numel(fSpecGHz);%2000;
+freqInds=round(linspace(1,numel(fSpecGHz),nFreqElem));
 % % 
-
-
-load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/OSOdataCross.mat');
-tIndsExpInterest=70:160;
-winLen_t=62.5e-12
-lowerClip=max(max(spgm))/2.5;
-nptPerWin=64;
-phaseAnalysis=2;
+% 
+% load('OSOdataCross_filtv2.mat');
+% % load('OSOdataCross.mat');
+% tIndsExpInterest=70:160;
+% winLen_t=62.5e-12
+% lowerClip=max(max(spgm))/2.5;
+% nptPerWin=64;
+% phaseAnalysis=2;
 
 
 fMaxTLS=fSpecGHz(end)*1e9*2;
