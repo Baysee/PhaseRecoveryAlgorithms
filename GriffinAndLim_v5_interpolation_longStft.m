@@ -16,7 +16,7 @@ scale=1;
 
 %% SUT generation
 
-fmax=31e9/2;%Fs/10;
+fmax=180e9/2;%Fs/10;
 % SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
 SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(240*22e-24/2)*(2*pi*f).^2/2));%+superGauss(0,fmax,10,f,0).*(exp(-1j*(120*22e-24/2)*(2*pi*f).^2/2));
 % SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
@@ -32,7 +32,7 @@ SUT=nifft(SUTf,Fs);
 % Adjust these parameters as needed
 winLen=2^7;
 winLent=winLen*dt
-winInc=winLen/4;%winLen-1;%/(2^2);
+winInc=winLen;%winLen-1;%/(2^2);
 interpAmount_t=1; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
@@ -97,9 +97,9 @@ analysisWin=winInterp/overlapAmount; % Analysis window for the inverse spgm
 S0=sqrt(spgm);%.*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
 
 xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,S0);
-xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,stft);
+% xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,stft);
 
-maxIteration=150;
+maxIteration=50;
 
 % Convergence criterion
 di=zeros(1,maxIteration);
