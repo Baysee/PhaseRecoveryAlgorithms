@@ -33,9 +33,9 @@ addpath('../phaseRecovery_Data');
 
 % load('OsoDeconv_narrow_20221028.mat');spgm=circshift(spgm,-82);lowerClip=max(max(spgm))/60;
 % load('OSO_deconvWithBackground.mat');lowerClip=max(max(spgm))/25;
-% load('OSO_deconvNoBackground.mat');spgm=circshift(spgm,-82);lowerClip=max(max(spgm))/300;
+load('OSO_deconvNoBackground.mat');spgm=circshift(spgm,-82);lowerClip=max(max(spgm))/300;
 % load('OSOdataCross_filtv2.mat');lowerClip=max(max(spgm))/25;
-load('OSOdataCross.mat');lowerClip=max(max(spgm))/25;
+% load('OSOdataCross.mat');lowerClip=max(max(spgm))/25;
 tIndsExpInterest=40:200;
 winLen_t=62.5e-12
 bwIRF=500e9;
@@ -135,7 +135,7 @@ if abs(winLen-round(winLen))<0.01
     warning('small rounding of winLen')
 end
 winInc=winLen;
-interpAmount_t=16 ; % For now, make this a power of 2 (or 1)!!
+interpAmount_t=1 ; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1  ; % For now, make this a power of 2 (or 1)!!
 
 
