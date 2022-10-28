@@ -33,9 +33,9 @@ addpath('../phaseRecovery_Data');
 
 % load('OsoDeconv_narrow_20221028.mat');spgm=circshift(spgm,-82);lowerClip=max(max(spgm))/60;
 % load('OSO_deconvWithBackground.mat');lowerClip=max(max(spgm))/25;
-load('OSO_deconvNoBackground.mat');spgm=circshift(spgm,-82);lowerClip=max(max(spgm))/300;
+% load('OSO_deconvNoBackground.mat');spgm=circshift(spgm,-82);lowerClip=max(max(spgm))/300;
 % load('OSOdataCross_filtv2.mat');lowerClip=max(max(spgm))/25;
-% % load('OSOdataCross.mat');lowerClip=max(max(spgm))/25;
+load('OSOdataCross.mat');lowerClip=max(max(spgm))/25;
 tIndsExpInterest=40:200;
 winLen_t=62.5e-12
 bwIRF=500e9;
@@ -43,8 +43,8 @@ nptPerWin=64;
 phaseAnalysis=2;
 fMaxStft=400e9;
 
-
-
+filtm=10;
+plotFilt=0;
 
 
 
