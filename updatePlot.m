@@ -1,19 +1,19 @@
 function updatePlot(h1,xlimsZoom,t,tspgm,fspgm,xt0,SUT,xt,spgm,SiIntensity,diC,diCLabel,diR,diRLabel)
 figure(h1);
-FS=16;
-subplot(3,2,1)
+FS=12;
+subplot(4,4,[1,2,5,6])
 imagesc(tspgm,fspgm,spgm)
 title('SUT spgm')
-subplot(3,2,2)
+subplot(4,4,[3,4,7,8])
 imagesc(tspgm,fspgm,SiIntensity)
 title('current Iteration spgm')
-subplot(3,2,3)
+subplot(4,4,[9,10])
 plotIniFin(t,xt0,xt,SUT,FS)
-subplot(3,2,4)
+subplot(4,4,[11,12])
 plotIniFin(t,xt0,xt,SUT,FS)
 ylims=ylim(); xlim(xlimsZoom); ylim(ylims)
 
-subplot(3,2,5:6)
+subplot(4,4,[13:16])
 yyaxis left
 plot(diC)
 ylabel(diCLabel)

@@ -7,7 +7,7 @@ ispgm=zeros(1,lent); % Initialize variable
 % v = VideoWriter('../istft');
 % v.FrameRate=10;
 % open(v);
-% 
+
 % figure;
 % subplot(2,1,1)
 % imagesc(abs(S).^2)
@@ -18,14 +18,14 @@ for i=1:nIncs
 %     sutInds=mod(winInds+windowCenters(i),lent)+1;
     ispgm=ispgm+circshift(analysisWin,windowCenters(i)).*ift.';%,;
     
-%     
+% %     
 % %     
 %     yyaxis left; hold off
 % plot(real(ispgm)); hold off
 %     yyaxis right; 
 %     plot(real(ift)); hold on; 
 %     plot(circshift(analysisWin,windowCenters(i))/max(analysisWin)*max(abs(real(ift))))
-%     hold o:ff
+%     hold off
 %     title(num2str(i))
 %     legend('real( x(t) )','real (iFFT)' ,'shifted window')
 %     xlim([1 lent])

@@ -86,7 +86,7 @@ xt0=istft_TLS(S0,winLen,phit,phiw);;%get_istft_fullSigLen(lent,windowCenters,ana
 xt_sut=istft_TLS(stft,winLen,phit,phiw);;%get_istft_fullSigLen(lent,windowCenters,analysisWin,Fs,nIncs,S0);
 % xt0=get_istft_fullSigLen(lent,windowCentersInterp,analysisWin,Fs,nIncsInterp,stft);
 
-maxIteration=200;
+maxIteration=800;
 
 % Convergence criterion
 di=zeros(1,maxIteration);

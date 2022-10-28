@@ -3,8 +3,8 @@
 addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 %% Time frequency vectors definition
 
-lent=2^13;                      % Signal length
-tWind=4e-9;                   % Time window span
+lent=2^14;                      % Signal length
+tWind=8e-9;                   % Time window span
 
 
 t=linspace(0,tWind,lent);
@@ -16,9 +16,10 @@ scale=1;
 
 %% SUT generation
 
-fmax=180e9/2;%Fs/10;
+fmax=400e9/2;%Fs/10;
 % SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
-SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(240*22e-24/2)*(2*pi*f).^2/2));%+superGauss(0,fmax,10,f,0).*(exp(-1j*(120*22e-24/2)*(2*pi*f).^2/2));
+SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(240*22e-24/2)*(2*pi*f).^2/2));%+...
+%     superGauss(0,fmax,10,f,0).*(exp(-1j*(240*22e-24/2)*(2*pi*f).^2/2));
 % SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
 %     superGauss(0,sutBW,10,f,0).*(exp(-1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
 SUT=nifft(SUTf,Fs);
@@ -33,14 +34,14 @@ SUT=nifft(SUTf,Fs);
 winLen=2^7;
 winLent=winLen*dt
 winInc=winLen;%winLen-1;%/(2^2);
-interpAmount_t=1; % For now, make this a power of 2 (or 1)!!
+interpAmount_t=8; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
 
 winSec=ones(1,winLen);
 windowInds=(1:lent)-lent/2;
-% win=superGauss(0,winLen/2,100,windowInds,0);
-win=zeros(1,lent); win(round(lent/2)-winLen/2:round(lent/2)+winLen/2-1)=winSec;
+win=superGauss(0,winLen/2,4,windowInds,0);
+% win=zeros(1,lent); win(round(lent/2)-winLen/2:round(lent/2)+winLen/2-1)=winSec;
 
 win=circshift(win,lent/2);
 
@@ -105,7 +106,8 @@ maxIteration=50;
 di=zeros(1,maxIteration);
 diC=di;
 diR=di;
-[xt,Si]=phaseRecovLoop(nIncsInterp,windowCentersInterp,lent,winInterp,winLen,t,dt,xt0,tspgm,fspgm,spgm,SUT,analysisWin,Fs,maxIteration);
+plotIter=1;
+[xt,Si]=phaseRecovLoop(nIncsInterp,windowCentersInterp,lent,winInterp,winLen,t,dt,xt0,tspgm,fspgm,spgm,SUT,analysisWin,Fs,maxIteration,{'mse','frogE'},plotIter,filtm,fMaxStft,plotFilt,f);
 %
 
 

@@ -15,12 +15,12 @@ xt=xt0;
 %%% Over correction parameters
 % FROM FGLA
 alpha1=0;%.7;%8;%0.8;%.8;
-alpha2=0.2;
-alpha3=0.99;
+alpha2=0.4;
+alpha3=0.8;
 % FROM FORG OVERCorrection
 beta1=1.1;
 beta2=1.3;
-beta3=1.9;
+beta3=1.5;
 
 plotFilt=0;
 fMaxTLS=fspgm(end)-fspgm(1);

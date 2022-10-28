@@ -8,24 +8,24 @@ addpath('../phaseRecovery_Data');
 % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOZigZag.mat');
 % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOzigzag_deconv.mat');
 % load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOZigZag.mat');
-load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOzigzag_deconv.mat');
-tIndsExpInterest=2:179;
-fSpecGHz=fSpecGHz;%/(56.4e9*TargetResolution)
-winLen_t=200e-12
-lowerClip=max(max(spgm))/15;
-nptPerWin=32;
-phaseAnalysis=1;
-nFreqElem=numel(fSpecGHz);%2000;
-freqInds=round(linspace(1,numel(fSpecGHz),nFreqElem));
+% load('RTOzigzag_deconv.mat');
+% tIndsExpInterest=2:179;
+% fSpecGHz=fSpecGHz;%/(56.4e9*TargetResolution)
+% winLen_t=200e-12
+% lowerClip=max(max(spgm))/15;
+% nptPerWin=32;
+% phaseAnalysis=1;
+% nFreqElem=numel(fSpecGHz);%2000;
+% freqInds=round(linspace(1,numel(fSpecGHz),nFreqElem));
 % % 
-% 
-% load('OSOdataCross_filtv2.mat');
-% % load('OSOdataCross.mat');
-% tIndsExpInterest=70:160;
-% winLen_t=62.5e-12
-% lowerClip=max(max(spgm))/2.5;
-% nptPerWin=64;
-% phaseAnalysis=2;
+
+load('OSOdataCross_filtv2.mat');
+% load('OSOdataCross.mat');
+tIndsExpInterest=70:160;
+winLen_t=62.5e-12
+lowerClip=max(max(spgm))/2.5;
+nptPerWin=64;
+phaseAnalysis=2;
 
 
 fMaxTLS=fSpecGHz(end)*1e9*2;
@@ -176,7 +176,7 @@ imagesc(tspgm,fspgm,spgm)
 
 %% Iterative Griffin and Lim algorithm
 
-S0=sqrt(spgm);%.*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
+S0=sqrt(spgm).*exp(1j*rand(size(spgm))*2*pi);%.*(-1*(stft<0));%.*exp(1j*rand(size(spgm))*2*pi); % Seed stft
 
 % figure;plot(tspgm,sum(S0,1))
 iniPhase=exp(1j*normrnd(0,pi,size(S0)));
@@ -189,7 +189,13 @@ maxIteration=45;
 di=zeros(1,maxIteration);
 diC=di;
 diR=di;
-[xt,Si]=phaseRecovLoop(nIncsInterp,windowCentersInterp,lent,winInterp,winLen,t,dt,xt0,tspgm,fspgm,spgm,SUT,analysisWin,Fs,maxIteration);
+plotIter=1;
+[xt,Si]=phaseRecovLoop(nIncsInterp,windowCentersInterp,lent,winInterp,winLen,t,dt,xt0,tspgm,fspgm,spgm,SUT,analysisWin,Fs,maxIteration,{'Inconsistency','frogE'},plotIter);
+
+
+
+
+
 
 xt1=xt;%
 %

@@ -5,8 +5,8 @@ addpath( '/Users/ben/Documents/MATLAB/library' )
 addpath( '/Users/ben/Documents/MATLAB/library/export_fig' )
 addpath('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData')
 addpath('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\TLSanalysisDocs\MenloAnalysisDocs_20220201');
-generalFolder_scope='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData/spectrogram_20211109/';
-% generalFolder_scope='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\spectrogram_20211109\'
+% generalFolder_scope='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData/spectrogram_20211109/';
+generalFolder_scope='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\spectrogram_20211109\'
 apexFolder='/ApexControl/';
 
 %% Bandwidth demonstration
@@ -81,7 +81,7 @@ xlabel('Time (ns)'); ylabel('Photovoltage (mV)')
 
 %% Process Spectrogram Data
 % Interpolate data and adjust length to
-nInterp=250;%1e1;
+nInterp=500;%1e1;
 lent=numel(xsIni)*nInterp;
 xInterp=linspace(xsIni(1), xsIni(end),lent);
 yInterp=interp1(xsIni,ysIni,xInterp,'spline');

@@ -1,0 +1,7 @@
+start in 1.. 2.. 3.. order of the folders
+You will need to download all these files and place it in a folder. 
+The main function is the deconvL1.m file
+
+https://github.com/Addy-ad/Signal-processing/tree/Deconvolution-L1-MM-guided-waves
+
+https://dsp.stackexchange.com/questions/71822/deconvolution-of-a-1d-time-domain-wave-signal-convolved-with-series-of-rect-sign
