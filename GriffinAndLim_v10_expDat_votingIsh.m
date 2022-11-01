@@ -5,43 +5,43 @@ addpath('../phaseRecovery_Data');
 %% Load data and set time-frequency vectors
 
 
-% load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOZigZag.mat');
+load('RTOZigZag.mat');lowerClip=max(max(spgm))/400;
 % load('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecovery_Data/RTOzigzag_deconv.mat');
 % load('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\PhaseRecoveryAlgorithms_repo\phaseRecovery_Data/RTOZigZag.mat');
-% % load('RTOzigzag_deconv.mat');
+% load('RTOzigzag_deconv.mat');
 % load('RTOzigzag_deconv_20221028.mat'); lowerClip=max(max(spgm))/40;
-% tIndsExpInterest=2:179;
-% fSpecGHz=fSpecGHz;%/(56.4e9*TargetResolution)
-% winLen_t=200e-12
-% nptPerWin=32;
-% phaseAnalysis=1;
-% nFreqElem=numel(fSpecGHz);%2000;
-% freqInds=round(linspace(1,numel(fSpecGHz),nFreqElem));
-% filtm=10;
-% fMaxStft=80e9;
-% bwIRF=50e9;
-% plotFilt=0;
-% % 
-% yr_f=nfft(yReshaped,1); IRF_reconv_filt=superGauss(0,bwIRF,1,fRaw,0);
+tIndsExpInterest=2:179;
+fSpecGHz=fSpecGHz;%/(56.4e9*TargetResolution)
+winLen_t=200e-12
+nptPerWin=32;
+phaseAnalysis=1;
+nFreqElem=numel(fSpecGHz);%2000;
+freqInds=round(linspace(1,numel(fSpecGHz),nFreqElem));
+filtm=10;
+fMaxStft=80e9;
+bwIRF=50e9;
+plotFilt=0;
 % 
+% yr_f=nfft(yReshaped,1); IRF_reconv_filt=superGauss(0,bwIRF,1,fRaw,0);
+
 
 
 % % 
 
 
 
-
-% load('OsoDeconv_narrow_20221028.mat');spgm=circshift(spgm,-82);lowerClip=max(max(spgm))/60;
-% load('OSO_deconvWithBackground.mat');lowerClip=max(max(spgm))/25;
-load('OSO_deconvNoBackground.mat');spgm=circshift(spgm,-82);lowerClip=max(max(spgm))/300;
-% load('OSOdataCross_filtv2.mat');lowerClip=max(max(spgm))/25;
-% load('OSOdataCross.mat');lowerClip=max(max(spgm))/25;
-tIndsExpInterest=40:200;
-winLen_t=62.5e-12
-bwIRF=500e9;
-nptPerWin=64;
-phaseAnalysis=2;
-fMaxStft=400e9;
+% 
+% % load('OsoDeconv_narrow_20221028.mat');spgm=circshift(spgm,-82);lowerClip=max(max(spgm))/60;
+% % load('OSO_deconvWithBackground.mat');lowerClip=max(max(spgm))/25;
+% load('OSO_deconvNoBackground.mat');spgm=circshift(spgm,-82);lowerClip=max(max(spgm))/300;
+% % load('OSOdataCross_filtv2.mat');lowerClip=max(max(spgm))/25;
+% % load('OSOdataCross.mat');lowerClip=max(max(spgm))/25;
+% tIndsExpInterest=40:200;
+% winLen_t=62.5e-12
+% bwIRF=500e9;
+% nptPerWin=64;
+% phaseAnalysis=2;
+% fMaxStft=400e9;
 
 filtm=10;
 plotFilt=0;
@@ -67,6 +67,11 @@ spgmExpRaw=spgmIni(:,tIndsExpInterest);
 spgmExpRaw(spgmExpRaw<lowerClip)=0;%
 spgmExpRaw(spgmExpRaw>lowerClip)=spgmExpRaw(spgmExpRaw>lowerClip)-lowerClip;
 
+
+
+
+%% voting
+nIter=1;
 
 %% SUT generation
 % Used to compared with a simulation SUT... doesn't seem very relevant.
@@ -206,7 +211,7 @@ imagesc(tspgm,fspgm,spgm)
 
 %% Iterative Griffin and Lim algorithm
 
-nIter=3;
+% nIter=3;
 SiOut=zeros(numel(spgm(:,1)),numel(spgm(1,:)),nIter);
 xtOut=zeros(numel(SUT),nIter);
 for iIter=1:nIter
@@ -244,7 +249,7 @@ SiOut_Raw=SiOut;
 
 
 
-
+if nIter~=1
 
 
 
@@ -287,7 +292,7 @@ maxIteration=40;
 [xt,Si]=phaseRecovLoop(nIncsInterp,windowCentersInterp,lent,winInterp,winLen,t,dt,xt0,tspgm,fspgm,spgm,SUT,analysisWin,Fs,maxIteration,{'Inconsistency','frogE'},plotIter,filtm,fMaxStft,plotFilt,f);
 
 
-
+end
 
 
 
