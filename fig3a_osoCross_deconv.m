@@ -86,7 +86,7 @@ ysIni=real(filtSG(ysIni1',filtBW,1,1));
 
 %% Process Spectrogram Data
 % Interpolate data and adjust length to
-nInterp=12;42;%1e1;
+nInterp=8;42;%1e1;
 lent=numel(xsIni)*nInterp;
 xInterp=linspace(xsIni(1), xsIni(end),lent);
 yInterp=interp1(xsIni,ysIni,xInterp,'spline');
@@ -106,8 +106,8 @@ ys=ysFilt;
 spgm_df=fmax/ntl*1e9;
 npts_dfDesired=2*round(1/tl/spgm_df);
 
-irfFWHM=11.5e-12;
-winIRF=26e-12;
+irfFWHM=13e-12;
+winIRF=50e-12;
 xIRF=(1:round(winIRF/dtInterp))*dtInterp-winIRF/2;
 IRF=superGauss(0,irfFWHM/(2*sqrt(2*log(2))),1,xIRF,0);
 % measuredIRF=circshift(measuredIRF,round(numel(measuredIRF)/2));
@@ -116,20 +116,21 @@ figure;plot(xInterp(1:lent)-2e-8,ys)
 hold on
 plot(xIRF-5.733e-10,IRF*4+0.3)
 
-yBackground=abs(filterSig(1,1e-3*lent,ys,1,(1:lent)-lent/2))*0.8;
-ysForDeconv=ys-yBackground;
-figure;plot(ys); hold on; plot(yBackground);plot(abs(ysForDeconv))
+yBackground=abs(filterSig(1,1e-3*lent,ys,1,(1:lent)-lent/2))*0.6;
+ysForDeconv=ys-yBackground;ysForDeconv=ysForDeconv-mean(ysForDeconv(1:30));
+
+figure;plot(ys); hold on; plot(yBackground);plot((ysForDeconv))
 
 
-
-ys=ysForDeconv;
+xs=xInterp(1:lent);
+% ys=ysForDeconv;
 
 
 lam=1;
-Nit=2;
-[deconvDat, cost] = deconvL1(ys(1:end),lam , IRF, 1,Nit );
+Nit=20;
+[deconvDat, cost] = deconvL1(ysForDeconv(1:end),lam , IRF, 1,Nit );
 deconvDat1=deconvDat; deconvDat1(1:10)=0;
-figure;plot(deconvDat1); hold on; plot(ys/max(ys)*max(deconvDat1))
+figure;plot(xs,deconvDat1); hold on; plot(xs,ysForDeconv/max(ysForDeconv)*max(deconvDat1))
 
 
 ys=abs(deconvDat1);%+yBackground.'*sum(deconvDat1)/sum(ysForDeconv);
@@ -200,27 +201,27 @@ percent=0.1;
 
 risemfNorm=find(mfNorm>percent,1); fallmfNorm=find(mfNorm>percent,1,'last');
 risemtNorm=find(mtNorm>percent,1); fallmtNorm=find(mtNorm>percent,1,'last');
-
-figure;
-% subplot(2,1,1)
-% imagesc(tSpecns,fSpecGHz,spgm/max(max(spgm)))
-imagesc(tSpecns,fSpecGHz,10*log(spgm/max(max(spgm))))
-% colormap('cmrmap')
-caxis([-12 0])
-colorbar()
-xlabel('Time (ns)'); ylabel('Frequency (GHz)')
-
-map=jet(500);
-colormap(map)
-
-figure
-% subplot(2,1,2)
-plot(freqCent*1e-9,powerf_linNorm)
-hold on
-plot(fSpecGHz,mfNorm)
-xlimFrac=1.5;
-xlim([xlimFrac*fSpecGHz(1) xlimFrac*fSpecGHz(end)])
-
-xlabel('Frequency (GHz)')
-legend(['OSA trace, 90%FW: ' num2str(1e-9*(abs(freqCent(rise))+abs(freqCent(fall)))) ],...
-['spgm Marginal trace, 90%FW: ' num2str(abs(fSpecGHz(risemfNorm))+abs(fSpecGHz(fallmfNorm)))])
+% 
+% figure;
+% % subplot(2,1,1)
+% % imagesc(tSpecns,fSpecGHz,spgm/max(max(spgm)))
+% imagesc(tSpecns,fSpecGHz,10*log(spgm/max(max(spgm))))
+% % colormap('cmrmap')
+% caxis([-12 0])
+% colorbar()
+% xlabel('Time (ns)'); ylabel('Frequency (GHz)')
+% 
+% map=jet(500);
+% colormap(map)
+% 
+% figure
+% % subplot(2,1,2)
+% plot(freqCent*1e-9,powerf_linNorm)
+% hold on
+% plot(fSpecGHz,mfNorm)
+% xlimFrac=1.5;
+% xlim([xlimFrac*fSpecGHz(1) xlimFrac*fSpecGHz(end)])
+% 
+% xlabel('Frequency (GHz)')
+% legend(['OSA trace, 90%FW: ' num2str(1e-9*(abs(freqCent(rise))+abs(freqCent(fall)))) ],...
+% ['spgm Marginal trace, 90%FW: ' num2str(abs(fSpecGHz(risemfNorm))+abs(fSpecGHz(fallmfNorm)))])

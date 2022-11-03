@@ -1,4 +1,4 @@
-function [xt,Si,diCPlot,diRPlot]=phaseRecovLoop(nIncsInterp,windowCentersInterp,lent,winInterp,winLen,t,dt,...
+function [xt,Si,diCPlot,diRPlot]=DUMMY__phaseRecovLoop(nIncsInterp,windowCentersInterp,lent,winInterp,winLen,t,dt,...
     xt0,tspgm,fspgm,spgm,SUT,analysisWin,Fs,maxIteration,metrics,plotIter,filtm,fMaxStft,plotFilt,f)
 %% metrics is a 2-element cell, corresponding to the left and right axis content of the convergence curve
 
@@ -27,12 +27,12 @@ xt=filterSig(filtm,fMaxStft,xt0,plotFilt,f);
 %%% Over correction parameters
 % FROM FGLA
 alpha1=0.1;%.7;%8;%0.8;%.8;
-alpha2=0.3;
-alpha3=0.55;
+alpha2=0.2;
+alpha3=0.4;
 % FROM FORG OVERCorrection
 beta1=1.15;
-beta2=1.35;
-beta3=1.44;
+beta2=1.2;
+beta3=1.4;
 
 %
 %
