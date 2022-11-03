@@ -15,14 +15,6 @@ interpAmounts=[1,2,4,8,16];
 % (icl, inptWin, ibwIRF, iInter);
 b21=-12758; b22=5082;
 
-
-% Check only unInterpolated data
-alldiRs=alldiRs(:,:,:,1);
-allMeanb2s1=allMeanb2s1(:,:,:,1);
-allMeanb2s2=allMeanb2s2(:,:,:,1);
-allStdb2s1=allStdb2s1(:,:,:,1);
-allStdb2s2=allStdb2s2(:,:,:,1);
-
 % Normalize data
 b21Error=10*log10(abs(allMeanb2s1-b21)/abs(b21));
 b22Error=10*log10(abs(allMeanb2s2-b22)/abs(b22));
@@ -58,13 +50,11 @@ end
 noneFound=0
 iter=1;
 nParas=4;%numel(poses(:,1));
-% nParas=numel(poses(:,1));
 while noneFound==0;
     
 %     currentMatUnique=unique(poses(:,iter));
 %     nReps=numel(poses(:,iter))-numel(currentMatUnique);
     matNow=poses(2:5,1:iter);
-%     matNow=poses(:,1:iter);
     A=matNow; A=A(:);
     [x, b, uidx] = unique(A);
 % counts = accumarray(uidx, 1);
