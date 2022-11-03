@@ -25,7 +25,7 @@ xt=xt0;
 xt=filterSig(filtm,fMaxStft,xt0,plotFilt,f);
 
 %%% Over correction parameters
-% FROM FGLA
+% ZIGZAG2
 alpha1=0.1;%.7;%8;%0.8;%.8;
 alpha2=0.3;
 alpha3=0.55;
@@ -33,6 +33,17 @@ alpha3=0.55;
 beta1=1.15;
 beta2=1.35;
 beta3=1.44;
+
+
+%%% Over correction parameters
+% ZIGZAG2
+alpha1=0.1;%.7;%8;%0.8;%.8;
+alpha2=0.3;
+alpha3=0.4;
+% FROM FORG OVERCorrection
+beta1=1.15;
+beta2=1.35;
+beta3=1.4;
 
 %
 %

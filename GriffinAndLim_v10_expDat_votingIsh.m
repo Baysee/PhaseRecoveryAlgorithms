@@ -2,23 +2,34 @@
 addpath( 'C:\Users\Lord Photon\Documents\MATLAB\library_repo\library' )
 addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 addpath('../phaseRecovery_Data');
-outputFigsDir='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\outputFigs\';
+outputFigsDir='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\outputFigs_zigzag2\';
 
 %% Load data and set time-frequency vectors
 
 
+
+%% Parameters used for zigzag1
 % define loop parameters
 clips_l=[20,40,60];
 nptPerWin_l=[16,32,64];
-bwIRF_l=[30:5:70]*1e9;
+bwIRF_l=[55:15:110]*1e9;
 interpAmounts=[1,2,4,8,16];
 
 
-for icl=2:numel(clips_l)
+%% Parameters used for zigzag2
+% define loop parameters
+clips_l=[40,80,120];
+nptPerWin_l=[32,64,96];
+bwIRF_l=[30:5:70]*1e9;
+interpAmounts=[1,4,8];
+
+
+for icl=1:numel(clips_l)
     for inptWin=1:numel(nptPerWin_l)
         for ibwIRF=1:numel(bwIRF_l)
             for iInter=1:numel(interpAmounts)
-  
+  itStr=num2str([icl inptWin ibwIRF iInter])
+
                  
 clipThresh=clips_l(icl);
 nptPerWin=nptPerWin_l(inptWin);
@@ -205,6 +216,7 @@ end
 % 
 % 
 % 
+                    clear padded1 spgmExpRaw spgmExpRawPadded
 
 
 %% Iterative Griffin and Lim algorithm
@@ -245,10 +257,12 @@ alldiCs(icl, inptWin, ibwIRF, iInter)=diCPlot(end);
 alldiRs(icl, inptWin, ibwIRF, iInter)=diRPlot(end);
 
 timeNowStr=getTimeString();
-itStr=num2str([icl inptWin ibwIRF iInter])
-save_figpng([outputFigsDir 'spgm_' itStr '_' timeNowStr]);
+% save_figpng([outputFigsDir 'spgm_' itStr '_' timeNowStr]);
 
-                 
+f1=gcf;
+saveas(f1,[outputFigsDir 'spgm_' itStr '_' timeNowStr '.png'],'png')
+
+                                
 
 SiOut_Raw=SiOut;
 
@@ -321,7 +335,9 @@ xt1=xt;%
 %
 
 
-
+clear Si S0 iniPhase SiOut SiOut_Raw spgm
+                    
+                    
 
 
 
@@ -431,10 +447,13 @@ allMeanb2s2(icl, inptWin, ibwIRF, iInter)=meanb2(2);
 allStdb2s1(icl, inptWin, ibwIRF, iInter)=stdb2(1);
 allStdb2s2(icl, inptWin, ibwIRF, iInter)=stdb2(2);
 
-    timeNowStr=getTimeString();
-itStr=num2str([icl inptWin ibwIRF iInter])
-save_figpng([outputFigsDir 'beta2_' itStr '_' timeNowStr]);
+timeNowStr=getTimeString();
+% save_figpng([outputFigsDir 'beta2_' itStr '_' timeNowStr]);
+f1=gcf;
+saveas(f1,[outputFigsDir 'beta2_' itStr '_' timeNowStr '.png'],'png')
 
+                    
+                    
     
 end
 
@@ -458,6 +477,11 @@ close all
             end
         end
     end
+    timeNowStr=getTimeString();
+
+save([outputFigsDir 'dataMatrix' timeNowStr],'allMeanb2s1','allMeanb2s2','allStdb2s1','allStdb2s2','alldiCs','alldiRs')
+
+
 end
 
 timeNowStr=getTimeString();
