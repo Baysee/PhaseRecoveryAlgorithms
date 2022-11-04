@@ -2,7 +2,7 @@
 addpath( 'C:\Users\Lord Photon\Documents\MATLAB\library_repo\library' )
 addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 addpath('../phaseRecovery_Data');
-outputFigsDir='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\outputFigs_DUMMY_Cross_20221103_take2\';
+outputFigsDir='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\outputFigs_DUMMY_Cross_20221104\';
 
 %% Load data and set time-frequency vectors
 
@@ -63,20 +63,22 @@ plotIter=0;
 % load('OSOdataCross_filtv2.mat');lowerClip=max(max(spgm))/25;
 % load('OSOdataCross.mat');lowerClip=max(max(spgm))/25;
 
-clips_l=[10,20,70,120];
+clips_l=[20,70,140];
 fns={'OsoDeconv_narrow_irf11p5_26','OsoDeconv_narrow_irf11p5_40','OsoDeconv_narrow_irf13_50',...
     'OsoDeconv_narrow_irf14p5_40'}
-nptPerWin_l=[64,128,256];
-bwIRF_l=[400, 600, 800, 1000, 8000]*1e9;
-interpAmounts=[1,2,4,8];
+nptPerWin_l=[64,128];
+bwIRF_l=[400,  800,  8000]*1e9;
+interpAmounts=[1,4,8];
+
+
 
 for icl=1:numel(clips_l)
-for ifn=1:numel(fns);
-        for inptWin=3:numel(nptPerWin_l)
+    for ifn=1:numel(fns);
+        for inptWin=1:numel(nptPerWin_l)
             for ibwIRF=1:numel(bwIRF_l)
-                for iInter=3:numel(interpAmounts)
-                             itStr=num2str([ icl ifn, inptWin, ibwIRF, iInter])
-           
+                for iInter=1:numel(interpAmounts)
+                    itStr=num2str([ icl, ifn, inptWin, ibwIRF, iInter])
+                    
                     load(fns{ifn});
                     clipThresh=clips_l(icl);
                     nptPerWin=nptPerWin_l(inptWin);
@@ -278,13 +280,13 @@ for ifn=1:numel(fns);
                     %%%%%%%%%%%%%%%%%%%%%%% FOR PARAMETRIC ANALYSIS
                     alldiCs( icl, ifn, inptWin, ibwIRF, iInter)=diCPlot(end);
                     alldiRs( icl, ifn, inptWin, ibwIRF, iInter)=diRPlot(end);
-                     
-        
+                    
+                    
                     timeNowStr=getTimeString();
-%                     save_figpng([outputFigsDir 'spgm_' itStr '_' timeNowStr]);
+                    %                     save_figpng([outputFigsDir 'spgm_' itStr '_' timeNowStr]);
                     f1=gcf;
                     saveas(f1,[outputFigsDir 'spgm_' itStr '_' timeNowStr '.png'],'png')
-
+                    
                     
                     SiOut_Raw=SiOut;
                     
@@ -360,8 +362,8 @@ for ifn=1:numel(fns);
                     
                     
                     
-                       marginal=sum(abs(Si).^2,1);
-                        clear Si S0 iniPhase SiOut SiOut_Raw spgm
+                    marginal=sum(abs(Si).^2,1);
+                    clear Si S0 iniPhase SiOut SiOut_Raw spgm
                     
                     
                     
@@ -478,7 +480,7 @@ for ifn=1:numel(fns);
                     
                     if phaseAnalysis==2
                         
-                     
+                        
                         figure;
                         subplot(3,1,1)
                         plot(t-t(end)/2,abs(xt).^2); ylabel('intensity')
@@ -505,15 +507,15 @@ for ifn=1:numel(fns);
                         
                         
                         %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FOR PARAMETRIC ANALYSIS
-                        allMaxFreqs( icl, ifn, inptWin, ibwIRF, iInter)=f(maxFreq);
+                        allMaxFreqs( icl, ifn, inptWin, ibwIRF, iInter)=abs(f(maxFreq));
                         
                         timeNowStr=getTimeString();
-%                         save_figpng([outputFigsDir 'temporalTrace_' itStr '_' timeNowStr]);
+                        %                         save_figpng([outputFigsDir 'temporalTrace_' itStr '_' timeNowStr]);
                         
                         f1=gcf;
                         saveas(f1,[outputFigsDir 'temporalTrace_' itStr '_' timeNowStr '.png'],'png')
-
-                    
+                        
+                        
                         
                     end
                     
@@ -527,14 +529,14 @@ for ifn=1:numel(fns);
             end
         end
         
-timeNowStr=getTimeString();
-save([outputFigsDir 'dataMatrix' timeNowStr],'allMaxFreqs','alldiCs','alldiRs')
-%
+        timeNowStr=getTimeString();
+        save([outputFigsDir 'dataMatrix' timeNowStr],'allMaxFreqs','alldiCs','alldiRs')
+        %
     end
     
-
-timeNowStr=getTimeString();
-save([outputFigsDir 'dataMatrix' timeNowStr],'allMaxFreqs','alldiCs','alldiRs')
-%
+    
+    timeNowStr=getTimeString();
+    save([outputFigsDir 'dataMatrixAll' timeNowStr],'allMaxFreqs','alldiCs','alldiRs')
+    %
 end
 
