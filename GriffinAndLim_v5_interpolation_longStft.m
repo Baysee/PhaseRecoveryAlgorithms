@@ -18,7 +18,7 @@ scale=1;
 
 fmax=400e9/2;%Fs/10;
 % SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
-SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(240*22e-24/2)*(2*pi*f).^2/2));%+...
+SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(10*22e-24/2)*(2*pi*f).^2/2));%+...
 %     superGauss(0,fmax,10,f,0).*(exp(-1j*(240*22e-24/2)*(2*pi*f).^2/2));
 % SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
 %     superGauss(0,sutBW,10,f,0).*(exp(-1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
@@ -33,8 +33,8 @@ SUT=nifft(SUTf,Fs);
 % Adjust these parameters as needed
 winLen=2^7;
 winLent=winLen*dt
-winInc=winLen;%winLen-1;%/(2^2);
-interpAmount_t=8; % For now, make this a power of 2 (or 1)!!
+winInc=winLen*7/8;%winLen-1;%/(2^2);
+interpAmount_t=1; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1; % For now, make this a power of 2 (or 1)!!
 
 
@@ -63,6 +63,7 @@ spgmRaw=abs(stft).^2;
 fspgm_raw=f;
 tspgm_raw=linspace(t(1),t(end),numel(stft(1,:)));
 
+figure;imagesc(tspgm_raw,fspgm_raw,abs(stft).^2)
 
 %%% PLaying around with COLA
 % sutRecon=get_istft_fullSigLen(lent,windowCenters,win/(sum(win)/winInc),Fs,nIncs,stft);
