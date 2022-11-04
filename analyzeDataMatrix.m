@@ -1,6 +1,13 @@
+%% Setup ZIGZAG
+
 % datDir='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\outputFigs\'
 % datMatName='dataMatrix21h58m.mat';
 
+zigzag=0;
+oso=1;
+
+if zigzag
+    
 datDir='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecoveryAlgorithm_outputFigs/outputFigs/'
 datMatName='dataMatrixAll01h50m.mat';
 
@@ -31,7 +38,28 @@ CV2=10*log10(abs(allStdb2s2/b22));
 
 
 varNames={'alldiRs','b21Error','b22Error','CV1','CV2'};
-poses=zeros(5,numel(CV1)); % Here I will store the linear index of each metric in the order of best performance
+
+end
+
+%% Setup OSO cross
+
+if oso 
+    
+datDir='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecoveryAlgorithm_outputFigs/outputFigs_DUMMY_Cross_20221103/'
+datMatName='dataMatrix18h52m.mat';
+
+load([datDir datMatName]);
+
+varNames={'alldiRs','alldiCs','allMaxFreqs'};
+
+
+end
+
+
+%% Main analysis routine
+
+poses=zeros(numel(varNames),numel(eval(varNames{1}))); % Here I will store the linear index of each metric in the order of best performance
+
 
 for iv=1:numel(varNames);
     
@@ -55,10 +83,14 @@ for iv=1:numel(varNames);
     
 end
 
+
 noneFound=0
 iter=1;
-nParas=4;%numel(poses(:,1));
-% nParas=numel(poses(:,1));
+firstPara=1;
+lastPara=numel(poses(:,1))-1;
+nParas=lastPara-firstPara+1;
+
+
 while noneFound==0;
     
 %     currentMatUnique=unique(poses(:,iter));
