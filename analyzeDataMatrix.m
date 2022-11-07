@@ -71,20 +71,19 @@ end
 
 if oso 
     
-datDir='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecoveryAlgorithm_outputFigs/outputFigs_DUMMY_Cross_20221103_take2/'
-datMatName='dataMatrixAll11h39m.mat';
+datDir='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/phaseRecoveryAlgorithm_outputFigs/outputFigs_DUMMY_Cross_20221104/'
+datMatName='dataMatrixAll14h50m.mat';
 
 load([datDir datMatName]);
 
 varNames={'alldiRs','alldiCs','allMaxFreqs'};
 
-
-clips_l=[10,20,70,120];
+clips_l=[20,70,140];
 fns={'OsoDeconv_narrow_irf11p5_26','OsoDeconv_narrow_irf11p5_40','OsoDeconv_narrow_irf13_50',...
     'OsoDeconv_narrow_irf14p5_40'}
-nptPerWin_l=[64,128,256];
-bwIRF_l=[400, 600, 800, 1000, 8000]*1e9;
-interpAmounts=[1,2,4,8];
+nptPerWin_l=[64,128];
+bwIRF_l=[400,  800,  8000]*1e9;
+interpAmounts=[1,4,8];
 
 
 para1='clip amount';
@@ -94,7 +93,7 @@ para4='bwIRF';
 para5='iInterp';
 
 
-ifn=4;
+ifn=3;
 alldiRs=squeeze(alldiRs(:,ifn,:,:,:));
 alldiCs=squeeze(alldiCs(:,ifn,:,:,:));
 allMaxFreqs=squeeze(allMaxFreqs(:,ifn,:,:,:));
