@@ -2,39 +2,45 @@
 addpath( 'C:\Users\Lord Photon\Documents\MATLAB\library_repo\library' )
 addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 addpath('../phaseRecovery_Data');
-outputFigsDir='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\outputFigs_zigzag3\';
+outputFigsDir='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\outputFigs_zigzagFinal\';
 
 %% Load data and set time-frequency vectors
 
 
 
 %% Parameters used for zigzag1
-% define loop parameters
-clips_l=[20,40,60];
-nptPerWin_l=[16,32,64];
-bwIRF_l=[55:15:110]*1e9;
-interpAmounts=[1,2,4,8,16];
-
-
-%% Parameters used for zigzag2
-% define loop parameters
-clips_l=[40,80,120];
-nptPerWin_l=[32,64,96];
-bwIRF_l=[30:5:70]*1e9;
-interpAmounts=[1,4,8];
-
-
-
-%% Parameters used for zigzag3
-% define loop parameters
-clips_l=[40,80,120];
-nptPerWin_l=[64,96,128];
-bwIRF_l=[70:10:120]*1e9;
-interpAmounts=[1,8,16];
-
+% % define loop parameters
+% clips_l=[20,40,60];
+% nptPerWin_l=[16,32,64];
+% bwIRF_l=[55:15:110]*1e9;
+% interpAmounts=[1,2,4,8,16];
+% 
+% 
+% %% Parameters used for zigzag2
+% % define loop parameters
+% clips_l=[40,80,120];
+% nptPerWin_l=[32,64,96];
+% bwIRF_l=[30:5:70]*1e9;
+% interpAmounts=[1,4,8];
+% 
+% 
+% 
+% %% Parameters used for zigzag3
+% % define loop parameters
+% clips_l=[40,80,120];
+% nptPerWin_l=[64,96,128];
+% bwIRF_l=[70:10:120]*1e9;
+% interpAmounts=[1,8,16];
+% 
 
 % % Parameters_Final
 
+%% Parameters used for zigzag1
+% define loop parameters
+clips_l=[40,80];
+nptPerWin_l=[64];
+bwIRF_l=[70,90]*1e9;
+interpAmounts=[4,16];
 
 
 for icl=1:numel(clips_l)
@@ -96,7 +102,7 @@ plotFilt=0;
 
 
 %% voting & other algorithm parameters
-maxIteration=40; % Max number of iteration in GLA 
+maxIteration=100; % Max number of iteration in GLA 
 % interpAmount_t=4 ; % For now, make this a power of 2 (or 1)!!
 interpAmount_f=1  ; % For now, make this a power of 2 (or 1)!!
 
@@ -106,8 +112,8 @@ filtm=10;
 plotFilt=0;
 
 % voting parameters
-nIter=1;
-maxIterationVoted=40;
+nIter=3;
+maxIterationVoted=100;
 
 
 
@@ -270,10 +276,10 @@ alldiCs(icl, inptWin, ibwIRF, iInter)=diCPlot(end);
 alldiRs(icl, inptWin, ibwIRF, iInter)=diRPlot(end);
 
 timeNowStr=getTimeString();
-% save_figpng([outputFigsDir 'spgm_' itStr '_' timeNowStr]);
+save_figpng([outputFigsDir 'spgm_' itStr '_' timeNowStr]);
 
 f1=gcf;
-saveas(f1,[outputFigsDir 'spgm_' itStr '_' timeNowStr '.png'],'png')
+% saveas(f1,[outputFigsDir 'spgm_' itStr '_' timeNowStr '.png'],'png')
 
                                 
 
@@ -300,6 +306,7 @@ if nIter~=1
     for iVot=1:numel(pairs(:,1))
         
         SiDiffs(:,:,iVot)=abs(SiOut(:,:,pairs(iVot,1))-SiOut(:,:,pairs(iVot,2)));
+%         SiDiffs(:,:,iVot)=abs(abs(SiOut(:,:,pairs(iVot,1)))-abs(SiOut(:,:,pairs(iVot,2))));
         
     end
     
@@ -324,6 +331,16 @@ if nIter~=1
     [xt,Si,diCPlot,diRPlot]=phaseRecovLoop(nIncsInterp,windowCentersInterp,lent,winInterp,winLen,t,dt,xt0,tspgm,fspgm,spgm,SUT,analysisWin,Fs,maxIterationVoted,{'Inconsistency','frogE'},plotIter,filtm,fMaxStftFilter,plotFilt,f);
     
     
+    
+alldiCsVoted(icl, inptWin, ibwIRF, iInter)=diCPlot(end);
+alldiRsVoted(icl, inptWin, ibwIRF, iInter)=diRPlot(end);
+
+timeNowStr=getTimeString();
+save_figpng([outputFigsDir 'spgmVoted_' itStr '_' timeNowStr]);
+
+f1=gcf;
+% saveas(f1,[outputFigsDir 'spgm_' itStr '_' timeNowStr '.png'],'png')
+
 end
 
 
@@ -492,12 +509,12 @@ close all
     end
     timeNowStr=getTimeString();
 
-save([outputFigsDir 'dataMatrix' timeNowStr],'allMeanb2s1','allMeanb2s2','allStdb2s1','allStdb2s2','alldiCs','alldiRs')
+save([outputFigsDir 'dataMatrix' timeNowStr],'alldiCsVoted','alldiRsVoted','allMeanb2s1','allMeanb2s2','allStdb2s1','allStdb2s2','alldiCs','alldiRs')
 
 
 end
 
 timeNowStr=getTimeString();
 
-save([outputFigsDir 'dataMatrixAll' timeNowStr],'allMeanb2s1','allMeanb2s2','allStdb2s1','allStdb2s2','alldiCs','alldiRs')
+save([outputFigsDir 'dataMatrixAll' timeNowStr],'alldiCsVoted','alldiRsVoted','allMeanb2s1','allMeanb2s2','allStdb2s1','allStdb2s2','alldiCs','alldiRs')
 

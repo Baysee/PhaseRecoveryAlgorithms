@@ -23,33 +23,51 @@ function [xt,Si,diCPlot,diRPlot]=phaseRecovLoop(nIncsInterp,windowCentersInterp,
 S0=abs(sqrt(spgm));
 xt=xt0;
 xt=filterSig(filtm,fMaxStft,xt0,plotFilt,f);
+% 
+% %%% Over correction parameters
+% % ZIGZAG2
+% alpha1=0.1;%.7;%8;%0.8;%.8;
+% alpha2=0.3;
+% alpha3=0.55;
+% % FROM FORG OVERCorrection
+% beta1=1.15;
+% beta2=1.35;
+% beta3=1.44;
+% 
+% 
+% %%% Over correction parameters
+% % ZIGZAG2
+% alpha1=0.1;%.7;%8;%0.8;%.8;
+% alpha2=0.3;
+% alpha3=0.4;
+% % FROM FORG OVERCorrection
+% beta1=1.15;
+% beta2=1.35;
+% beta3=1.4;
+
+%
+%
+%
+%
+
+
 
 %%% Over correction parameters
-% ZIGZAG2
+% ZIGZAG Final
 alpha1=0.1;%.7;%8;%0.8;%.8;
-alpha2=0.3;
-alpha3=0.55;
-% FROM FORG OVERCorrection
-beta1=1.15;
-beta2=1.35;
-beta3=1.44;
-
-
-%%% Over correction parameters
-% ZIGZAG2
-alpha1=0.1;%.7;%8;%0.8;%.8;
-alpha2=0.3;
+alpha2=0.25;
 alpha3=0.4;
 % FROM FORG OVERCorrection
 beta1=1.15;
-beta2=1.35;
-beta3=1.4;
+beta2=1.33;
+beta3=1.35;
 
-%
-%
-%
-% alpha1=0; alpha2=alpha1;alpha3=alpha1;
+
+%  alpha1=0; alpha2=alpha1;alpha3=alpha1;
 % beta1=1; beta2=beta1;beta3=beta1;
+
+
+
 
 alpha=alpha1;
 tn=S0; tnm1=S0;

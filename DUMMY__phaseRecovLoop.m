@@ -25,14 +25,24 @@ xt=xt0;
 xt=filterSig(filtm,fMaxStft,xt0,plotFilt,f);
 
 %%% Over correction parameters
-% FROM FGLA
+% % FROM FGLA
+% alpha1=0.1;%.7;%8;%0.8;%.8;
+% alpha2=0.2;
+% alpha3=0.4;
+% % FROM FORG OVERCorrection
+% beta1=1.15;
+% beta2=1.2;
+% beta3=1.4;
+
+% % FINAL
 alpha1=0.1;%.7;%8;%0.8;%.8;
-alpha2=0.2;
-alpha3=0.4;
+alpha2=0.22;
+alpha3=0.43;
 % FROM FORG OVERCorrection
 beta1=1.15;
-beta2=1.2;
-beta3=1.4;
+beta2=1.24;
+beta3=1.42;
+
 
 %
 %
