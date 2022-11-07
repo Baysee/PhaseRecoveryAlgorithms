@@ -72,14 +72,20 @@ plotIter=0;
 
 
 
-% FINAL ROUND
+% % FINAL ROUND
+% clips_l=[20];
+% fns={'OsoDeconv_narrow_irf13_50',   'OsoDeconv_narrow_irf14p5_40'}
+% nptPerWin_l=[64,128];
+% bwIRF_l=[ 800, 3000, 8000]*1e9;
+% interpAmounts=[4,8];
+
+
+% FINAL ROUND 2!
 clips_l=[20];
-fns={'OsoDeconv_narrow_irf13_50',   'OsoDeconv_narrow_irf14p5_40'}
-nptPerWin_l=[64,128];
-bwIRF_l=[ 800, 3000, 8000]*1e9;
-interpAmounts=[4,8];
-
-
+fns={ 'OsoDeconv_narrow_irf14p5_40'}
+nptPerWin_l=[128];
+bwIRF_l=[ 450, 8000, 3000]*1e9;
+interpAmounts=[1,8];
 
 
 for icl=1:numel(clips_l)
