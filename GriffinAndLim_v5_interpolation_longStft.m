@@ -4,7 +4,7 @@ addpath( '/Users/ben/Documents/MATLAB/library_repo' )
 %% Time frequency vectors definition
 
 lent=2^14;                      % Signal length
-tWind=8e-9;                   % Time window span
+tWind=200e-9;                   % Time window span
 
 
 t=linspace(0,tWind,lent);
@@ -16,14 +16,43 @@ scale=1;
 
 %% SUT generation
 
-fmax=400e9/2;%Fs/10;
+fmax=58e9/2;%Fs/10;
 % SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(tWind/4/(fmax*2*pi))*(2*pi*f).^2/2));
 SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(10*22e-24/2)*(2*pi*f).^2/2));%+...
+
+p1=240; p2=-600;
+SUTf=superGauss(0,fmax,10,f,0).*(exp(1j*(p1*22e-24/2)*(2*pi*f).^2/2)).*(exp(1j*(-1e-9)*(2*pi*f)))+...
+    superGauss(0,fmax,10,f,0).*(exp(1j*(p2*22e-24/2)*(2*pi*f).^2/2)).*(exp(1j*(-3e-9)*(2*pi*f)))+...
+    superGauss(0,fmax,10,f,0).*(exp(1j*(p1*22e-24/2)*(2*pi*f).^2/2)).*(exp(1j*(-5e-9)*(2*pi*f)))+...
+    superGauss(0,fmax,10,f,0).*(exp(1j*(p2*22e-24/2)*(2*pi*f).^2/2)).*(exp(1j*(-7e-9)*(2*pi*f)))+...
+        superGauss(0,fmax,10,f,0).*(exp(1j*(p1*22e-24/2)*(2*pi*f).^2/2)).*(exp(1j*(-9e-9)*(2*pi*f)))+...
+    superGauss(0,fmax,10,f,0).*(exp(1j*(p2*22e-24/2)*(2*pi*f).^2/2)).*(exp(1j*(9e-9)*(2*pi*f)))+...
+      superGauss(0,fmax,10,f,0).*(exp(1j*(p2*22e-24/2)*(2*pi*f).^2/2)).*(exp(1j*(1e-9)*(2*pi*f)))+...
+    superGauss(0,fmax,10,f,0).*(exp(1j*(p1*22e-24/2)*(2*pi*f).^2/2)).*(exp(1j*(3e-9)*(2*pi*f)))+...
+    superGauss(0,fmax,10,f,0).*(exp(1j*(p2*22e-24/2)*(2*pi*f).^2/2)).*(exp(1j*(5e-9)*(2*pi*f)))+...
+    superGauss(0,fmax,10,f,0).*(exp(1j*(p1*22e-24/2)*(2*pi*f).^2/2)).*(exp(1j*(7e-9)*(2*pi*f)));
 %     superGauss(0,fmax,10,f,0).*(exp(-1j*(240*22e-24/2)*(2*pi*f).^2/2));
 % SUTf=superGauss(0,sutBW,10,f,0).*(exp(1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2))+...
 %     superGauss(0,sutBW,10,f,0).*(exp(-1j*(tWind/4/(sutBW*2*pi))*(2*pi*f).^2/2));
 SUT=nifft(SUTf,Fs);
 
+figure;
+subplot(2,1,1)
+plot(t,(abs(SUT)).^2)
+yyaxis right
+plot(t,unwrap(angle(SUT)))
+ylabel('Phase (rad)')
+xlabel('Time')
+yyaxis left
+ylabel('Power')
+subplot(2,1,2)
+plot(f,(abs(SUTf)))
+yyaxis right
+plot(f,unwrap(angle(SUTf)))
+ylabel('Phase (rad)')
+xlabel('Frequency')
+yyaxis left
+ylabel('Power')
 % SUT=ones(size(SUT));
 
 
