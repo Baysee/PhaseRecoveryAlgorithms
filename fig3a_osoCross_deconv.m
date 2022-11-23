@@ -4,8 +4,8 @@
 addpath( '/Users/ben/Documents/MATLAB/library' )
 addpath('C:\Users\Lord Photon\Documents\MATLAB\library_repo\library')
 addpath(' C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\TLSanalysisDocs')
-generalFolder='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\spectrogram_20211109\';
-% generalFolder='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData/spectrogram_20211109/';
+% generalFolder='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\spectrogram_20211109\';
+generalFolder='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData/spectrogram_20211109/';
 apexFolder='ApexControl/20211118/Menlo/62p5ps/';
 addpath('deconvCodes')
 %% Bandwidth demonstration -- 62.5 ps time lens
@@ -103,6 +103,10 @@ ysFilt=real(filtSG(ys,filtBW2,2,1));
 ys=ysFilt;
 %% Enforce 16 GHz resolution
 
+
+deconv=0
+
+if deconv
 spgm_df=fmax/ntl*1e9;
 npts_dfDesired=2*round(1/tl/spgm_df);
 
@@ -128,12 +132,13 @@ xs=xInterp(1:lent);
 
 lam=1;
 Nit=20;
-[deconvDat, cost] = deconvL1(ysForDeconv(1:end),lam , IRF, 1,Nit );
+%%%%%%%%%%%%%%%%%%%% uncomment this!! [deconvDat, cost] = deconvL1(ysForDeconv(1:end),lam , IRF, 1,Nit );
 deconvDat1=deconvDat; deconvDat1(1:10)=0;
 figure;plot(xs,deconvDat1); hold on; plot(xs,ysForDeconv/max(ysForDeconv)*max(deconvDat1))
 
 
 ys=abs(deconvDat1);%+yBackground.'*sum(deconvDat1)/sum(ysForDeconv);
+
 % [pks,locs,w,p]=findpeaks(ys,'MinPeakProminence',0.5);
 % [pks,locs,w,p]=findpeaks(ys);%,'MinPeakProminence',0.4);
 % 
@@ -147,6 +152,9 @@ ys=abs(deconvDat1);%+yBackground.'*sum(deconvDat1)/sum(ysForDeconv);
 % yyaxis right; plot(locs,p)
 % ys=ysPeaksOnly;
 % ys=abs(filtSG(ys,filtBW*nInterp/4,1,1));
+
+end
+
 
 % Center overal spectrogram
 halfShift=0;thresh=10;
@@ -186,7 +194,7 @@ filtBW=500e2;
 freqCent=freqCent*1e9;
 percent=0.1;
 [rise,fall]=getRiseFall(powerf_linNorm,percent);
-
+% 
 % 
 % [lambda,power]=loadCellData([generalFolder_scope, apexFolder fnFolder,basefn_OSA, sigType_OSA{1}, basefn_OSAtime]);
 % c=299792458;
@@ -201,27 +209,27 @@ percent=0.1;
 
 risemfNorm=find(mfNorm>percent,1); fallmfNorm=find(mfNorm>percent,1,'last');
 risemtNorm=find(mtNorm>percent,1); fallmtNorm=find(mtNorm>percent,1,'last');
-% 
-% figure;
-% % subplot(2,1,1)
-% % imagesc(tSpecns,fSpecGHz,spgm/max(max(spgm)))
-% imagesc(tSpecns,fSpecGHz,10*log(spgm/max(max(spgm))))
-% % colormap('cmrmap')
-% caxis([-12 0])
-% colorbar()
-% xlabel('Time (ns)'); ylabel('Frequency (GHz)')
-% 
-% map=jet(500);
-% colormap(map)
-% 
-% figure
-% % subplot(2,1,2)
-% plot(freqCent*1e-9,powerf_linNorm)
-% hold on
-% plot(fSpecGHz,mfNorm)
-% xlimFrac=1.5;
-% xlim([xlimFrac*fSpecGHz(1) xlimFrac*fSpecGHz(end)])
-% 
-% xlabel('Frequency (GHz)')
-% legend(['OSA trace, 90%FW: ' num2str(1e-9*(abs(freqCent(rise))+abs(freqCent(fall)))) ],...
-% ['spgm Marginal trace, 90%FW: ' num2str(abs(fSpecGHz(risemfNorm))+abs(fSpecGHz(fallmfNorm)))])
+
+figure;
+subplot(2,1,1)
+imagesc(tSpecns,fSpecGHz,spgm/max(max(spgm)))
+imagesc(tSpecns,fSpecGHz,10*log(spgm/max(max(spgm))))
+% colormap('cmrmap')
+caxis([-12 0])
+colorbar()
+xlabel('Time (ns)'); ylabel('Frequency (GHz)')
+
+map=jet(500);
+colormap(map)
+
+figure
+% subplot(2,1,2)
+plot(freqCent*1e-9,powerf_linNorm)
+hold on
+plot(fSpecGHz,mfNorm)
+xlimFrac=1.5;
+xlim([xlimFrac*fSpecGHz(1) xlimFrac*fSpecGHz(end)])
+
+xlabel('Frequency (GHz)')
+legend(['OSA trace, 90%FW: ' num2str(1e-9*(abs(freqCent(rise))+abs(freqCent(fall)))) ],...
+['spgm Marginal trace, 90%FW: ' num2str(abs(fSpecGHz(risemfNorm))+abs(fSpecGHz(fallmfNorm)))])

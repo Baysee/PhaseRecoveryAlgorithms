@@ -13,7 +13,7 @@ fnZ='spgm_1  1  2  2_14h25m.fig';
 %% oso
 outputFigDir='/Users/ben/Desktop/PhD/manuscripts/Journals/TLS/phaseRecovery_TLS/figs/phaseRecovFigs/'
 
-fn='spgm_1  1  1  1  1_14h33m.fig';zz=0; ylims=[-240 240];
+fn='spgm_1  1  1  1  1_14h33m.fig';zz=0; ylims=[-240 240];ylimPhase=[-1500 1850];
 plotType='oso_'
 open([figDir 'oso/' fn]);
 
@@ -21,13 +21,13 @@ open([figDir 'oso/' fn]);
 % % % % % zz
 % fn='spgm_1  1  1  1_16h23m.fig';zz=1
 % fn='spgm_1  1  1  1_17h16m.fig';zz=1; ylims=[-28.2 28.2];
-% fn='spgm_1  1  1  1_18h36m.fig';zz=1; ylims=[-28.2 28.2];
+% fn='spgm_1  1  1  1_18h36m.fig';zz=1; ylims=[-28.2 28.2]; ylimPhase=[-240 10];
 % % fn='spgm_2  1  2  1_02h54m.fig';zz=1; ylims=[-28.2 28.2];
 % % fn='spgm_1  1  2  2_02h29m.fig';zz=1; ylims=[-28.2 28.2];
 % plotType='zz_'
 % 
 % h1=open([figDir 'zz/' fn]);
-% 
+
 
 
 
@@ -172,23 +172,33 @@ figure
 % subplot(2,2,3)
 plot(t*1e9,yAbs.^2/max(yAbs.^2));
 hold on; 
-plot(tSpec,mtIn)
+% plot(tSpec,mtIn)
 plot(tSpec,mtOut)
 xlim([tSpec(1) tSpec(end)])
 legend('Abs','mtIn','mtOut')
 ylabel('Intensity (n.u.)');
 yyaxis right;
-plot(t*1e9,yAngle);
+% plot(t*1e9,yAngle);
+if zz
+    phase=yAngle;
+plot(t*1e9,phase-max(phase))
+else
+    plot(t*1e9,yAngle-yAngle(round(numel(yAngle)/2))); ylim(ylimPhase)
+end
+ylim(ylimPhase)
 ylabel('Phase (rad)');
 title('reconstructed temporal trace'); xlabel('Time (ns)'); 
 save_figsvgeps([outputFigDir plotType 'time'])
+
+
+
 
 
 figure
 % subplot(2,2,4)
 plot(f,yfAbs.^2/max(yfAbs.^2)); 
 hold on; 
-plot(fSpec,mfIn)
+% plot(fSpec,mfIn)
 plot(fSpec,mfOut)
 legend('Abs','mfIn','mfOut')
 % 
@@ -198,11 +208,11 @@ legend('Abs','mfIn','mfOut')
 yyaxis right
 if zz
     phase=unwrap(angle(yfpad(locs)));
-plot(fpad(locs),phase-phase(round(numel(phase)/2)))
+plot(fpad(locs),phase-phase(round(numel(phase)/2))-60);%max(phase))
 else
-    plot(f,yAngle)
+    plot(f,yfAngle-yfAngle(round(numel(yfAngle)/2))); ylim(ylimPhase)
 end
-xlim(ylims)
+xlim(ylims);ylim(ylimPhase)
 ylabel('Phase (rad)');
 title('reconstructed spectral trace'); xlabel('Frequency (GHz)'); 
 save_figsvgeps([outputFigDir plotType 'freq'])

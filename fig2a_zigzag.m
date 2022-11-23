@@ -5,8 +5,8 @@ addpath( '/Users/ben/Documents/MATLAB/library' )
 addpath( '/Users/ben/Documents/MATLAB/library/export_fig' )
 addpath('/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData')
 addpath('C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\TLSanalysisDocs\MenloAnalysisDocs_20220201');
-% generalFolder_scope='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData/spectrogram_20211109/';
-generalFolder_scope='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\spectrogram_20211109\'
+generalFolder_scope='/Users/ben/Documents/MATLAB/timeFrequencyAnalysis/experimentalData/spectrogram_20211109/';
+% generalFolder_scope='C:\Users\Lord Photon\Documents\MATLAB\time-frequency analysis\Spectrogram_20211108\experimentalData\spectrogram_20211109\'
 apexFolder='/ApexControl/';
 
 %% Bandwidth demonstration
@@ -104,9 +104,9 @@ measIRF=circshift(measIRF,round(numel(measIRF)/2));
 reconvIRF=singleGauss(reconvPW/(2*sqrt(2*log(2))),-5.73e-9,xs,0);
 reconvIRF=circshift(reconvIRF,round(numel(measIRF)/2));
 
-zerPad=zeros(1,numel(measIRF)-1);%zeros(1,numel(ys)-1
-ys1=ys;
-[ysDeconv,remA]=deconv([ys,zerPad],measIRF);%circshift(measIRF,-38));
+% zerPad=zeros(1,numel(measIRF)-1);%zeros(1,numel(ys)-1
+% ys1=ys;
+% [ysDeconv,remA]=deconv([ys,zerPad],measIRF);%circshift(measIRF,-38));
 
 % ysReconv=conv(ysDeconv,reconvIRF);
 % 
@@ -157,7 +157,10 @@ power_f=fliplr(power);
 [~,maxFreqInd]=max(power_f);
 powerf_lin=10.^(power_f/10)/max(10.^(power_f/10));
 filtN=5e2
-powerf_linNorm=real(filtSG(powerf_lin,filtN,1,1));powerf_linNorm=powerf_linNorm/max(powerf_linNorm)
+powerf_linNorm=powerf_lin;
+%% %%% I use to filter the osa, maybe not necessary??
+% real(filtSG(powerf_lin,filtN,1,1));
+powerf_linNorm=powerf_linNorm/max(powerf_linNorm);
 centerFreq=freqOSA_G*powerf_linNorm'/(sum(powerf_linNorm));
 freqCent=freqOSA_G-centerFreq;
 percent=0.1;
